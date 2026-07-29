@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="cs">
+<!DOCTYPE html>
+<html lang="cs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KaJa Admin - Flotila</title>
 
-  <!-- Nastavení pro plnou obrazovku (Android + iOS PWA) -->
+  <!-- Nastavení pro plnou obrazovku -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="KaJa Admin">
   <meta name="theme-color" content="#0f172a">
 
-  <!-- Ikona na plochu (ikona náklaďáku v plném rozlišení) -->
+  <!-- Ikona na plochu -->
   <link rel="apple-touch-icon" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
   <link rel="icon" type="image/png" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
 
-  <!-- Manifest pro PWA (aby Android nabídl "Nainstalovat aplikaci") -->
-  <link rel="manifest" href="data:application/manifest+json;utf8,{%22name%22:%22KaJa%20Admin%22,%22short_name%22:%22KaJa%20Admin%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230f172a%22,%22theme_color%22:%22%230f172a%22}">
+  <!-- Odkaz na externí manifest -->
+  <link rel="manifest" href="./manifest.json">
 
-  <!-- Tailwind CSS pro moderní tmavý vzhled -->
+  <!-- Tailwind CSS & Lucide ikony -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide ikony -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-900 text-white min-h-screen p-4 sm:p-6 font-sans selection:bg-amber-400 selection:text-slate-900">
