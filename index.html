@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KaJa Admin - Flotila</title>
+
+  <!-- Nastavení pro plnou obrazovku (Android + iOS PWA) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KaJa Admin">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Ikona na plochu (ikona náklaďáku v plném rozlišení) -->
+  <link rel="apple-touch-icon" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
+
+  <!-- Manifest pro PWA (aby Android nabídl "Nainstalovat aplikaci") -->
+  <link rel="manifest" href="data:application/manifest+json;utf8,{%22name%22:%22KaJa%20Admin%22,%22short_name%22:%22KaJa%20Admin%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230f172a%22,%22theme_color%22:%22%230f172a%22}">
+
+  <!-- Tailwind CSS pro moderní tmavý vzhled -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide ikony -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4 sm:p-6 font-sans selection:bg-amber-400 selection:text-slate-900">
+
+  <!-- Hlavička -->
+  <header class="max-w-4xl mx-auto mb-6 flex justify-between items-center border-b border-slate-700 pb-4">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-amber-400 flex items-center gap-2">
+        <i data-lucide="truck"></i> KaJa Admin
+      </h1>
+      <p class="text-xs text-slate-400">Správa a evidence flotily</p>
+    </div>
+    <button onclick="nacistAuta()" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-lg border border-slate-700 text-slate-300 active:scale-95 transition-transform">
+      <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+    </button>
+  </header>
+
+  <!-- Hlavní kontejner pro auta -->
+  <main class="max-w-4xl mx-auto">
+    <!-- Indikátor načítání -->
+    <div id="loader" class="text-center py-12 text-slate-400">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-400 mb-2"></div>
+      <p>Načítám auta z databáze...</p>
+    </div>
+
+    <!-- Mřížka pro karty aut -->
+    <div id="grid-auta" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+      <!-- Sem skript dynamicky vygeneruje auta -->
+    </div>
+  </main>
+
+  <script>
+    // Tvůj propojený skript z Google Apps Scriptu
+    const API_URL = "https://script.google.com/macros/s/AKfycbwCHGUiAOMm6VV6VwJUD16siSg26jFjiR03HpbwImKst9mZn32_CBEwG6Y1Nn5VB-pQoQ/exec";
+
+    window.onload = function() {
+      lucide.createIcons();
+      nacistAuta();
+    };
+
+    function nacistAuta() {
+      document.getElementById('loader').classList.remove('hidden');
+      document.getElementById('grid-auta').classList.add('hidden');
+
+      fetch(API_URL + "?action=getAuta")
+        .then(response => response.json())
+        .then(data => {
+          vyrenderovatAuta(data);
+        })
+        .catch(error => {
+          console.error("Chyba při načítání:", error);
+          alert("Nepodařilo se načíst data z databáze.");
+        });
+    }
+
+    function vyrenderovatAuta(auta) {
+      const grid = document.getElementById('grid-auta');
+      grid.innerHTML = '';
+
+      auta.forEach(auto => {
+        const jeServis = auto.status && auto.status.toUpperCase() === 'SERVIS';
+
+        const bgKarta = jeServis 
+          ? 'bg-red-950/40 border-2 border-red-500 shadow-lg shadow-red-950/50' 
+          : 'bg-slate-800/80 border border-slate-700 hover:border-slate-500';
+
+        const statusBadge = jeServis
+          ? '<span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SERVIS POŽADOVÁN</span>'
+          : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> OK</span>';
+
+        const htmlDlazdice = `
+          <div onclick="otevritDetail(${auto.id})" class="${bgKarta} rounded-xl p-5 cursor-pointer transition-all duration-200 active:scale-[0.98] flex flex-col justify-between min-h-[120px]">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h2 class="text-xl font-bold text-white tracking-wide">${auto.nazev}</h2>
+                <div class="inline-block bg-slate-900/90 text-amber-400 font-mono text-xs px-2.5 py-1 rounded border border-slate-700 font-bold mt-1">
+                  ${auto.rz}
+                </div>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+            
+            <div class="flex justify-between items-end pt-3 border-t border-slate-700/50 text-sm">
+              <div class="text-slate-400">
+                Stav tachometru: <span class="text-white font-mono font-semibold">${Number(auto.odo).toLocaleString('cs-CZ')} km</span>
+              </div>
+              <div class="text-xs text-amber-400 font-medium flex items-center gap-1">
+                Detail <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.innerHTML += htmlDlazdice;
+      });
+
+      document.getElementById('loader').classList.add('hidden');
+      grid.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function otevritDetail(autoId) {
+      alert("Rozkliknuto auto ID: " + autoId);
+    }
+  </script>
+</body>
+</html>
