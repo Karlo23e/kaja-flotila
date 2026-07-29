@@ -161,13 +161,12 @@
               </div>
             </div>
 
-            <!-- SEKCIE PRO BRZDY (PŘEDNÍ / ZADNÍ - KOTOUČE / DESKY) -->
+            <!-- SEKCIE PRO BRZDY -->
             <div id="box-brzdy" class="bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-3 hidden">
               <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
                 <i data-lucide="disc" class="w-3.5 h-3.5"></i> Specifikace vyměněných dílů
               </h4>
 
-              <!-- Přední brzdy -->
               <div class="space-y-2">
                 <span class="text-xs font-bold text-slate-300 block">Přední náprava</span>
                 <div class="flex items-center justify-between pl-2">
@@ -186,7 +185,6 @@
                 </div>
               </div>
 
-              <!-- Zadní brzdy -->
               <div class="space-y-2 pt-2 border-t border-slate-800/80">
                 <span class="text-xs font-bold text-slate-300 block">Zadní náprava</span>
                 <div class="flex items-center justify-between pl-2">
@@ -527,8 +525,8 @@
       });
     }
 
+    // OPRAVA EDITACE
     function nacetDoEditace(servisId) {
-      const s = font.find ? font.find(item => item.id == servisId) : null;
       const sItem = aktualniServisy.find(item => item.id == servisId);
       if (!sItem) return;
 
@@ -570,6 +568,7 @@
       });
     }
 
+    // OPRAVA ULOŽENÍ STAVU ZAPLACENO
     function ulozitServis(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-ulozit');
@@ -582,7 +581,8 @@
       const isEdit = document.getElementById('form-servis-id').value !== '';
       const ukon = document.getElementById('form-ukon').value;
 
-      const stavZaplaceno = isSplit ? (isZaplaceno ? "ANO" : "NE") : "ANO";
+      // ZDE JE KLÍČOVÁ OPRAVA ZAPLACENO
+      const stavZaplaceno = isSplit ? isZaplaceno : true;
 
       let uzivatelskaPoznamka = document.getElementById('form-poznamka').value.trim();
       let specifikaceBrzd = [];
