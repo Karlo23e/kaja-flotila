@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="cs">
-<!DOCTYPE html>
-<html lang="cs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -17,14 +15,14 @@
   <link rel="apple-touch-icon" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
   <link rel="icon" type="image/png" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
 
-  <!-- Odkaz na externí manifest -->
+  <!-- Manifest -->
   <link rel="manifest" href="./manifest.json">
 
   <!-- Tailwind CSS & Lucide ikony -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen p-4 sm:p-6 font-sans selection:bg-amber-400 selection:text-slate-900">
+<body class="bg-slate-900 text-white min-h-screen p-4 sm:p-6 font-sans pb-12">
 
   <!-- Hlavička -->
   <header class="max-w-4xl mx-auto mb-6 flex justify-between items-center border-b border-slate-700 pb-4">
@@ -39,23 +37,106 @@
     </button>
   </header>
 
-  <!-- Hlavní kontejner pro auta -->
+  <!-- Hlavní seznam aut -->
   <main class="max-w-4xl mx-auto">
-    <!-- Indikátor načítání -->
     <div id="loader" class="text-center py-12 text-slate-400">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-400 mb-2"></div>
       <p>Načítám auta z databáze...</p>
     </div>
 
-    <!-- Mřížka pro karty aut -->
     <div id="grid-auta" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-      <!-- Sem skript dynamicky vygeneruje auta -->
+      <!-- Auta se načtou sem -->
     </div>
   </main>
 
+  <!-- MODÁLNÍ OKNO DETAILU AUTA -->
+  <div id="modal-detail" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center hidden p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl">
+      
+      <!-- Hlavička modálu -->
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 rounded-t-2xl">
+        <div>
+          <h2 id="modal-nazev" class="text-xl font-bold text-white">...</h2>
+          <span id="modal-spz" class="inline-block bg-slate-900 text-amber-400 font-mono text-xs px-2 py-0.5 rounded border border-slate-700 font-bold mt-1">...</span>
+        </div>
+        <button onclick="zavritDetail()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Obsah modálu -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-6">
+        
+        <!-- Formulář pro nový servis -->
+        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
+          <h3 class="text-md font-bold text-amber-400 mb-3 flex items-center gap-2">
+            <i data-lucide="wrench" class="w-4 h-4"></i> Zapsat nový servis / opravu
+          </h3>
+          
+          <form id="form-servis" onsubmit="ulozitServis(event)" class="space-y-3">
+            <input type="hidden" id="form-auto-id">
+            
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Druh úkonu</label>
+              <select id="form-ukon" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
+                <option value="Olej + Filtry">Olej + Filtry</option>
+                <option value="Brzdy">Brzdy</option>
+                <option value="Pneumatiky">Pneumatiky</option>
+                <option value="Běžný servis / Oprava">Běžný servis / Oprava</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Stav ODO (km)</label>
+                <input type="number" id="form-odo" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white font-mono focus:border-amber-400 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Cena Celkem (Kč)</label>
+                <input type="number" id="form-cena" oninput="spocitatPodily()" required placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white font-mono focus:border-amber-400 focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Přepínač 60/40 -->
+            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-300">
+                <input type="checkbox" id="form-split" onchange="spocitatPodily()" class="w-4 h-4 text-amber-400 rounded focus:ring-amber-400 focus:ring-offset-slate-900 bg-slate-800 border-slate-700">
+                Rozpočítat díly (60 % Řidič / 40 % Firma)
+              </label>
+
+              <div id="split-preview" class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800 hidden">
+                <div class="text-amber-400">Řidič (60 %): <span id="val-ridic" class="font-mono font-bold">0</span> Kč</div>
+                <div class="text-emerald-400">Firma (40 %): <span id="val-firma" class="font-mono font-bold">0</span> Kč</div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Poznámka / Detail úkonu</label>
+              <input type="text" id="form-poznamka" placeholder="např. Přední desky + kotouče Brembo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
+            </div>
+
+            <button type="submit" id="btn-ulozit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-lg active:scale-[0.99] transition-transform flex items-center justify-center gap-2">
+              <i data-lucide="save" class="w-4 h-4"></i> Uložit servis do databáze
+            </button>
+          </form>
+        </div>
+
+        <!-- Historie servisů -->
+        <div>
+          <h3 class="text-md font-bold text-slate-300 mb-3 flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4"></i> Historie servisů
+          </h3>
+          <div id="servis-loader" class="text-center py-4 text-xs text-slate-500">Načítám historii...</div>
+          <div id="servis-historie" class="space-y-2"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Tvůj propojený skript z Google Apps Scriptu
     const API_URL = "https://script.google.com/macros/s/AKfycbwCHGUiAOMm6VV6VwJUD16siSg26jFjiR03HpbwImKst9mZn32_CBEwG6Y1Nn5VB-pQoQ/exec";
+    let seznamAut = [];
 
     window.onload = function() {
       lucide.createIcons();
@@ -69,11 +150,8 @@
       fetch(API_URL + "?action=getAuta")
         .then(response => response.json())
         .then(data => {
+          seznamAut = data;
           vyrenderovatAuta(data);
-        })
-        .catch(error => {
-          console.error("Chyba při načítání:", error);
-          alert("Nepodařilo se načíst data z databáze.");
         });
     }
 
@@ -83,38 +161,30 @@
 
       auta.forEach(auto => {
         const jeServis = auto.status && auto.status.toUpperCase() === 'SERVIS';
-
         const bgKarta = jeServis 
           ? 'bg-red-950/40 border-2 border-red-500 shadow-lg shadow-red-950/50' 
           : 'bg-slate-800/80 border border-slate-700 hover:border-slate-500';
 
         const statusBadge = jeServis
-          ? '<span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SERVIS POŽADOVÁN</span>'
+          ? '<span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SERVIS</span>'
           : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> OK</span>';
 
-        const htmlDlazdice = `
-          <div onclick="otevritDetail(${auto.id})" class="${bgKarta} rounded-xl p-5 cursor-pointer transition-all duration-200 active:scale-[0.98] flex flex-col justify-between min-h-[120px]">
+        grid.innerHTML += `
+          <div onclick="otevritDetail(${auto.id})" class="${bgKarta} rounded-xl p-5 cursor-pointer active:scale-[0.98] transition-all flex flex-col justify-between min-h-[120px]">
             <div class="flex justify-between items-start mb-3">
               <div>
                 <h2 class="text-xl font-bold text-white tracking-wide">${auto.nazev}</h2>
-                <div class="inline-block bg-slate-900/90 text-amber-400 font-mono text-xs px-2.5 py-1 rounded border border-slate-700 font-bold mt-1">
-                  ${auto.rz}
-                </div>
+                <div class="inline-block bg-slate-900 text-amber-400 font-mono text-xs px-2.5 py-1 rounded border border-slate-700 font-bold mt-1">${auto.rz}</div>
               </div>
               <div>${statusBadge}</div>
             </div>
             
             <div class="flex justify-between items-end pt-3 border-t border-slate-700/50 text-sm">
-              <div class="text-slate-400">
-                Stav tachometru: <span class="text-white font-mono font-semibold">${Number(auto.odo).toLocaleString('cs-CZ')} km</span>
-              </div>
-              <div class="text-xs text-amber-400 font-medium flex items-center gap-1">
-                Detail <i data-lucide="chevron-right" class="w-4 h-4"></i>
-              </div>
+              <div class="text-slate-400">Tachometr: <span class="text-white font-mono font-semibold">${Number(auto.odo).toLocaleString('cs-CZ')} km</span></div>
+              <div class="text-xs text-amber-400 font-medium flex items-center gap-1">Detail <i data-lucide="chevron-right" class="w-4 h-4"></i></div>
             </div>
           </div>
         `;
-        grid.innerHTML += htmlDlazdice;
       });
 
       document.getElementById('loader').classList.add('hidden');
@@ -123,7 +193,118 @@
     }
 
     function otevritDetail(autoId) {
-      alert("Rozkliknuto auto ID: " + autoId);
+      const auto = seznamAut.find(a => a.id == autoId);
+      if (!auto) return;
+
+      document.getElementById('modal-nazev').innerText = auto.nazev;
+      document.getElementById('modal-spz').innerText = auto.rz;
+      document.getElementById('form-auto-id').value = auto.id;
+      document.getElementById('form-odo').value = auto.odo;
+      document.getElementById('form-cena').value = '';
+      document.getElementById('form-poznamka').value = '';
+      document.getElementById('form-split').checked = false;
+      spocitatPodily();
+
+      document.getElementById('modal-detail').classList.remove('hidden');
+      lucide.createIcons();
+      nacistHistoriiServisu(auto.id);
+    }
+
+    function zavritDetail() {
+      document.getElementById('modal-detail').classList.add('hidden');
+    }
+
+    function spocitatPodily() {
+      const cena = parseFloat(document.getElementById('form-cena').value) || 0;
+      const isSplit = document.getElementById('form-split').checked;
+      const preview = document.getElementById('split-preview');
+
+      if (isSplit && cena > 0) {
+        document.getElementById('val-ridic').innerText = Math.round(cena * 0.60).toLocaleString('cs-CZ');
+        document.getElementById('val-firma').innerText = Math.round(cena * 0.40).toLocaleString('cs-CZ');
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+    }
+
+    function nacistHistoriiServisu(autoId) {
+      const histDiv = document.getElementById('servis-historie');
+      const loader = document.getElementById('servis-loader');
+      histDiv.innerHTML = '';
+      loader.classList.remove('hidden');
+
+      fetch(API_URL + "?action=getServisy&autoId=" + autoId)
+        .then(r => r.json())
+        .then(data => {
+          loader.classList.add('hidden');
+          if (data.length === 0) {
+            histDiv.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-2">Zatím žádné servisní záznamy.</p>';
+            return;
+          }
+          data.forEach(s => {
+            const splitInfo = (s.podilRidic > 0) 
+              ? `<div class="text-[10px] text-amber-400 mt-1">Řidič: ${Number(s.podilRidic).toLocaleString('cs-CZ')} Kč | Firma: ${Number(s.podilFirma).toLocaleString('cs-CZ')} Kč</div>`
+              : '';
+
+            histDiv.innerHTML += `
+              <div class="bg-slate-800/40 border border-slate-700/60 p-3 rounded-lg text-xs space-y-1">
+                <div class="flex justify-between font-bold text-slate-200">
+                  <span>${s.ukon}</span>
+                  <span class="text-amber-400 font-mono">${Number(s.cena).toLocaleString('cs-CZ')} Kč</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                  <span>${s.datum}</span>
+                  <span class="font-mono">${Number(s.odo).toLocaleString('cs-CZ')} km</span>
+                </div>
+                ${s.poznamka ? `<div class="text-slate-300 italic pt-0.5">${s.poznamka}</div>` : ''}
+                ${splitInfo}
+              </div>
+            `;
+          });
+        });
+    }
+
+    function ulozitServis(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-ulozit');
+      btn.disabled = true;
+      btn.innerText = "Ukládám...";
+
+      const cena = parseFloat(document.getElementById('form-cena').value) || 0;
+      const isSplit = document.getElementById('form-split').checked;
+
+      const payload = {
+        autoId: document.getElementById('form-auto-id').value,
+        ukon: document.getElementById('form-ukon').value,
+        odo: document.getElementById('form-odo').value,
+        cena: cena,
+        podilRidic: isSplit ? Math.round(cena * 0.60) : 0,
+        podilFirma: isSplit ? Math.round(cena * 0.40) : cena,
+        poznamka: document.getElementById('form-poznamka').value
+      };
+
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Uložit servis do databáze';
+        if (res.status === 'success') {
+          alert('Servis úspěšně uložen!');
+          zavritDetail();
+          nacistAuta();
+        } else {
+          alert('Chyba při ukládání: ' + res.message);
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Uložit servis do databáze';
+        alert('Chyba při připojení k databázi.');
+      });
     }
   </script>
 </body>
