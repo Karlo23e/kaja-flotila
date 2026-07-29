@@ -5,20 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KaJa Admin - Flotila</title>
 
-  <!-- Nastavení pro plnou obrazovku -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f172a">
 
-  <!-- Ikona na plochu -->
   <link rel="apple-touch-icon" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
   <link rel="icon" type="image/png" href="https://img.icons8.com/?size=512&id=mze1JcS3CX2Y&format=png&color=000000">
 
-  <!-- Manifest -->
   <link rel="manifest" href="./manifest.json">
 
-  <!-- Tailwind CSS & Lucide ikony -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -62,11 +58,85 @@
         </button>
       </div>
 
+      <!-- Navigace v modálu -->
+      <div class="flex border-b border-slate-800 bg-slate-900/50 px-4">
+        <button id="tab-btn-prehled" onclick="prepnutTab('prehled')" class="py-3 px-4 text-sm font-bold border-b-2 border-amber-400 text-amber-400 flex items-center gap-2">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Prehľad
+        </button>
+        <button id="tab-btn-novy" onclick="prepnutTab('novy')" class="py-3 px-4 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i data-lucide="wrench" class="w-4 h-4"></i> Nový servis
+        </button>
+        <button id="tab-btn-historie" onclick="prepnutTab('historie')" class="py-3 px-4 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-2">
+          <i data-lucide="history" class="w-4 h-4"></i> Historie
+        </button>
+      </div>
+
       <!-- Obsah modálu -->
       <div class="p-4 sm:p-6 overflow-y-auto space-y-6">
         
-        <!-- Formulář pro servis -->
-        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
+        <!-- záložka 1: PŘEHLED (STK, Dálnice, HAV, Km do servisu) -->
+        <div id="tab-prehled" class="space-y-4">
+          
+          <!-- Rychlá tlačítka akcí -->
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="prepnutTab('novy')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all text-sm">
+              <i data-lucide="plus-circle" class="w-5 h-5"></i> Zapsat servis
+            </button>
+            <button onclick="prepnutTab('historie')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold p-3.5 rounded-xl border border-slate-700 flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all text-sm">
+              <i data-lucide="history" class="w-5 h-5"></i> Historie servisů
+            </button>
+          </div>
+
+          <!-- Karta administrativních termínů -->
+          <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-700/60 pb-2">
+              <i data-lucide="calendar" class="w-4 h-4"></i> Dokumenty a Kontroly
+            </h3>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block mb-0.5">STK</span>
+                <span id="val-stk" class="font-mono text-xs font-bold text-white">...</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block mb-0.5">Dálniční zn.</span>
+                <span id="val-dalnicni" class="font-mono text-xs font-bold text-white">...</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block mb-0.5">HAV Pojištění</span>
+                <span id="val-hav" class="font-mono text-xs font-bold text-white">...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Karta stavu kilometrů do výměny -->
+          <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-700/60 pb-2">
+              <i data-lucide="gauge" class="w-4 h-4"></i> Zbývající km do servisu
+            </h3>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                <span class="text-slate-300">Motorový olej:</span>
+                <span id="val-km-olej" class="font-mono font-bold">...</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                <span class="text-slate-300">Kabinový filtr:</span>
+                <span id="val-km-kabinovy" class="font-mono font-bold">...</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                <span class="text-slate-300">Vzduchový filtr:</span>
+                <span id="val-km-vzduchovy" class="font-mono font-bold">...</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                <span class="text-slate-300">Palivový filtr:</span>
+                <span id="val-km-palivovy" class="font-mono font-bold">...</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- záložka 2: FORMULÁŘ NOVÉHO SERVISU -->
+        <div id="tab-novy" class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 hidden">
           <div class="flex justify-between items-center mb-3">
             <h3 id="form-title" class="text-md font-bold text-amber-400 flex items-center gap-2">
               <i data-lucide="wrench" class="w-4 h-4"></i> Zapsat nový servis / opravu
@@ -96,7 +166,6 @@
                 <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i> Nastavení upozornění příští výměny
               </h4>
 
-              <!-- Motorový olej -->
               <div class="space-y-1.5">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-medium text-slate-200">Motorový olej</span>
@@ -112,7 +181,6 @@
                 </div>
               </div>
 
-              <!-- Kabinový filtr -->
               <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-medium text-slate-200">Kabinový filtr</span>
@@ -128,7 +196,6 @@
                 </div>
               </div>
 
-              <!-- Vzduchový filtr -->
               <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-medium text-slate-200">Vzduchový filtr</span>
@@ -144,7 +211,6 @@
                 </div>
               </div>
 
-              <!-- Palivový filtr -->
               <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-medium text-slate-200">Palivový filtr</span>
@@ -215,11 +281,9 @@
               </div>
             </div>
 
-            <!-- Přepínač Toggle 0 / 1 pro Rozpočet 60/40 -->
             <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-sm font-medium text-slate-200">Rozpočítat díly (60 % Řidič / 40 % Firma)</span>
-                
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="form-split" onchange="spocitatPodily()" class="sr-only peer">
                   <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
@@ -232,13 +296,12 @@
               </div>
             </div>
 
-            <!-- Stav zaplacení pro řidiče -->
             <div id="box-zaplaceno" class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 hidden">
               <div class="flex items-center justify-between">
                 <span class="text-sm font-medium text-slate-200">Podíl řidiče je již zaplacen</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="form-zaplaceno" class="sr-only peer">
-                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
               </div>
             </div>
@@ -254,11 +317,8 @@
           </form>
         </div>
 
-        <!-- Historie servisů -->
-        <div>
-          <h3 class="text-md font-bold text-slate-300 mb-3 flex items-center gap-2">
-            <i data-lucide="history" class="w-4 h-4"></i> Historie servisů
-          </h3>
+        <!-- záložka 3: HISTORIE SERVISŮ -->
+        <div id="tab-historie" class="hidden">
           <div id="servis-loader" class="text-center py-4 text-xs text-slate-500">Načítám historii...</div>
           <div id="servis-historie" class="space-y-2.5"></div>
         </div>
@@ -345,6 +405,65 @@
       lucide.createIcons();
     }
 
+    function prepnutTab(tabName) {
+      const tabs = ['prehled', 'novy', 'historie'];
+      tabs.forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        const btn = document.getElementById('tab-btn-' + t);
+        btn.classList.remove('border-amber-400', 'text-amber-400');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-btn-' + tabName);
+      activeBtn.classList.remove('border-transparent', 'text-slate-400');
+      activeBtn.classList.add('border-amber-400', 'text-amber-400');
+    }
+
+    function otevritDetail(autoId) {
+      const auto = seznamAut.find(a => a.id == autoId);
+      if (!auto) return;
+
+      document.getElementById('modal-nazev').innerText = auto.nazev;
+      document.getElementById('modal-spz').innerText = auto.rz;
+      document.getElementById('form-auto-id').value = auto.id;
+
+      // Naplnění hodnot pro dashboard v záložce Přehled
+      document.getElementById('val-stk').innerText = auto.stk || 'Neuvedeno';
+      document.getElementById('val-dalnicni').innerText = auto.dalnicni || 'Neuvedeno';
+      document.getElementById('val-hav').innerText = auto.hav || 'Neuvedeno';
+
+      const d = auto.detailZbyva || {};
+      formatKmBox('val-km-olej', d.olej);
+      formatKmBox('val-km-kabinovy', d.kabinovy);
+      formatKmBox('val-km-vzduchovy', d.vzduchovy);
+      formatKmBox('val-km-palivovy', d.palivovy);
+
+      resetFormulare(auto.odo);
+      prepnutTab('prehled');
+
+      document.getElementById('modal-detail').classList.remove('hidden');
+      lucide.createIcons();
+      nacistHistoriiServisu(auto.id);
+    }
+
+    function formatKmBox(elemId, val) {
+      const el = document.getElementById(elemId);
+      if (val === null || val === undefined) {
+        el.innerText = 'Nenastaveno';
+        el.className = 'font-mono font-bold text-slate-500';
+      } else {
+        el.innerText = Number(val).toLocaleString('cs-CZ') + ' km';
+        if (val <= 1000) el.className = 'font-mono font-bold text-red-400';
+        else if (val <= 3500) el.className = 'font-mono font-bold text-amber-400';
+        else el.className = 'font-mono font-bold text-emerald-400';
+      }
+    }
+
+    function zavritDetail() {
+      document.getElementById('modal-detail').classList.add('hidden');
+    }
+
     function zmenaUkonu() {
       const ukon = document.getElementById('form-ukon').value;
       const boxIntervaly = document.getElementById('box-intervaly');
@@ -367,30 +486,6 @@
       const wrap = document.getElementById('wrap-inter-' + typ);
       if (chk) wrap.classList.remove('hidden');
       else wrap.classList.add('hidden');
-    }
-
-    function otevritDetail(autoId) {
-      const auto = seznamAut.find(a => a.id == autoId);
-      if (!auto) return;
-
-      document.getElementById('modal-nazev').innerText = auto.nazev;
-      document.getElementById('modal-spz').innerText = auto.rz;
-      document.getElementById('form-auto-id').value = auto.id;
-      
-      resetFormulare(auto.odo);
-
-      if (auto.olejInterval) document.getElementById('inter-olej').value = auto.olejInterval;
-      if (auto.kabinovyInterval) document.getElementById('inter-kabinovy').value = auto.kabinovyInterval;
-      if (auto.vzduchovyInterval) document.getElementById('inter-vzduchovy').value = auto.vzduchovyInterval;
-      if (auto.palivovyInterval) document.getElementById('inter-palivovy').value = auto.palivovyInterval;
-
-      document.getElementById('modal-detail').classList.remove('hidden');
-      lucide.createIcons();
-      nacistHistoriiServisu(auto.id);
-    }
-
-    function zavritDetail() {
-      document.getElementById('modal-detail').classList.add('hidden');
     }
 
     function resetFormulare(vychoziOdo) {
@@ -476,6 +571,12 @@
               </div>
             ` : '';
 
+            // ČISTÉ FORMATOVÁNÍ DATUMU
+            let cistyDatum = s.datum;
+            if (cistyDatum && cistyDatum.includes('T')) {
+              cistyDatum = cistyDatum.split('T')[0].split('-').reverse().join('. ');
+            }
+
             histDiv.innerHTML += `
               <div class="${borderKarta} border p-3.5 rounded-xl text-xs space-y-1.5 relative">
                 ${chybiZaplatit ? '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>' : ''}
@@ -483,7 +584,7 @@
                 <div class="flex justify-between items-start pr-4">
                   <div>
                     <span class="font-bold text-slate-200 text-sm">${s.ukon}</span>
-                    <span class="text-[10px] text-slate-400 block">${s.datum}</span>
+                    <span class="text-[10px] text-slate-400 block">${cistyDatum}</span>
                   </div>
                   <div class="text-right">
                     <span class="text-amber-400 font-mono font-bold text-sm block">${Number(s.cena).toLocaleString('cs-CZ')} Kč</span>
@@ -525,10 +626,11 @@
       });
     }
 
-    // OPRAVA EDITACE
     function nacetDoEditace(servisId) {
       const sItem = aktualniServisy.find(item => item.id == servisId);
       if (!sItem) return;
+
+      prepnutTab('novy');
 
       document.getElementById('form-servis-id').value = sItem.id;
       document.getElementById('form-title').innerHTML = '<i data-lucide="edit-3" class="w-4 h-4"></i> Upravit servisní záznam';
@@ -568,7 +670,6 @@
       });
     }
 
-    // OPRAVA ULOŽENÍ STAVU ZAPLACENO
     function ulozitServis(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-ulozit');
@@ -581,8 +682,7 @@
       const isEdit = document.getElementById('form-servis-id').value !== '';
       const ukon = document.getElementById('form-ukon').value;
 
-      // ZDE JE KLÍČOVÁ OPRAVA ZAPLACENO
-      const stavZaplaceno = isSplit ? isZaplaceno : true;
+      const stavZaplaceno = isSplit ? (isZaplaceno ? "ANO" : "NE") : "ANO";
 
       let uzivatelskaPoznamka = document.getElementById('form-poznamka').value.trim();
       let specifikaceBrzd = [];
@@ -634,6 +734,7 @@
           resetFormulare();
           nacistHistoriiServisu(autoId);
           nacistAuta();
+          prepnutTab('historie');
         } else {
           alert('Chyba při ukládání: ' + res.message);
         }
