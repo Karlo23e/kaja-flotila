@@ -161,6 +161,51 @@
               </div>
             </div>
 
+            <!-- SEKCIE PRO BRZDY (PŘEDNÍ / ZADNÍ - KOTOUČE / DESKY) -->
+            <div id="box-brzdy" class="bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-3 hidden">
+              <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                <i data-lucide="disc" class="w-3.5 h-3.5"></i> Specifikace vyměněných dílů
+              </h4>
+
+              <!-- Přední brzdy -->
+              <div class="space-y-2">
+                <span class="text-xs font-bold text-slate-300 block">Přední náprava</span>
+                <div class="flex items-center justify-between pl-2">
+                  <span class="text-xs text-slate-400">Kotouče</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="brzdy-predni-kotouce" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between pl-2">
+                  <span class="text-xs text-slate-400">Destičky</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="brzdy-predni-desky" checked class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Zadní brzdy -->
+              <div class="space-y-2 pt-2 border-t border-slate-800/80">
+                <span class="text-xs font-bold text-slate-300 block">Zadní náprava</span>
+                <div class="flex items-center justify-between pl-2">
+                  <span class="text-xs text-slate-400">Kotouče</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="brzdy-zadni-kotouce" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between pl-2">
+                  <span class="text-xs text-slate-400">Destičky</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="brzdy-zadni-desky" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs text-slate-400 mb-1">Stav ODO (km)</label>
@@ -195,14 +240,14 @@
                 <span class="text-sm font-medium text-slate-200">Podíl řidiče je již zaplacen</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="form-zaplaceno" class="sr-only peer">
-                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
               </div>
             </div>
 
             <div>
               <label class="block text-xs text-slate-400 mb-1">Poznámka / Detail úkonu</label>
-              <input type="text" id="form-poznamka" placeholder="např. Olej 5W-30 RCP + všechny filtry" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
+              <input type="text" id="form-poznamka" placeholder="Doplňující poznámka ke značce dílů..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
             </div>
 
             <button type="submit" id="btn-ulozit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-lg active:scale-[0.99] transition-transform flex items-center justify-center gap-2">
@@ -256,25 +301,19 @@
 
         const status = auto.status ? auto.status.toUpperCase() : 'OK';
 
-        // 1. Oranžové varování (zbývá 3 500 – 2 001 km)
         if (status === 'ORANZOVA') {
           bgKarta = 'bg-amber-950/30 border-2 border-amber-500 shadow-lg shadow-amber-950/40';
           statusBadge = '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> SERVIS BRZY</span>';
-        }
-        // 2. Červené varování (zbývá 2 000 – 1 001 km)
-        else if (status === 'CERVENA') {
+        } else if (status === 'CERVENA') {
           bgKarta = 'bg-red-950/40 border-2 border-red-500 shadow-lg shadow-red-950/50';
           statusBadge = '<span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SERVIS BLÍZKO</span>';
-        }
-        // 3. Kritické varování (zbývá <= 1 000 km nebo přetaženo)
-        else if (status === 'KRITICKE' || status === 'SERVIS') {
+        } else if (status === 'KRITICKE' || status === 'SERVIS') {
           bgKarta = 'bg-red-950/70 border-2 border-red-600 shadow-xl shadow-red-950/80 animate-pulse';
           statusBadge = '<span class="bg-red-600 text-white font-black text-xs px-3 py-1 rounded-full flex items-center gap-1 shadow-md animate-bounce"><i data-lucide="alert-octagon" class="w-4 h-4"></i> ! NUTNÝ SERVIS</span>';
         }
 
-        // Pokud je nezaplacený podíl řidiče, přidat ikonku vykřičníku na kartu
         const alertNezaplaceno = auto.maNezaplaceno 
-          ? '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border border-slate-900" title="Obsahuje nezaplacený servis!"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>' 
+          ? '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border border-slate-900"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>' 
           : '';
 
         const zbyvaText = (auto.zbyvaKm !== null) 
@@ -310,11 +349,18 @@
 
     function zmenaUkonu() {
       const ukon = document.getElementById('form-ukon').value;
-      const box = document.getElementById('box-intervaly');
+      const boxIntervaly = document.getElementById('box-intervaly');
+      const boxBrzdy = document.getElementById('box-brzdy');
+
       if (ukon === "Olej + Filtry") {
-        box.classList.remove('hidden');
+        boxIntervaly.classList.remove('hidden');
+        boxBrzdy.classList.add('hidden');
+      } else if (ukon === "Brzdy") {
+        boxIntervaly.classList.add('hidden');
+        boxBrzdy.classList.remove('hidden');
       } else {
-        box.classList.add('hidden');
+        boxIntervaly.classList.add('hidden');
+        boxBrzdy.classList.add('hidden');
       }
     }
 
@@ -363,6 +409,12 @@
       document.getElementById('notify-kabinovy').checked = false;
       document.getElementById('notify-vzduchovy').checked = false;
       document.getElementById('notify-palivovy').checked = false;
+
+      document.getElementById('brzdy-predni-kotouce').checked = false;
+      document.getElementById('brzdy-predni-desky').checked = true;
+      document.getElementById('brzdy-zadni-kotouce').checked = false;
+      document.getElementById('brzdy-zadni-desky').checked = false;
+
       toggleIntervalInput('olej');
       toggleIntervalInput('kabinovy');
       toggleIntervalInput('vzduchovy');
@@ -476,23 +528,24 @@
     }
 
     function nacetDoEditace(servisId) {
-      const s = aktualniServisy.find(item => item.id == servisId);
-      if (!s) return;
+      const s = font.find ? font.find(item => item.id == servisId) : null;
+      const sItem = aktualniServisy.find(item => item.id == servisId);
+      if (!sItem) return;
 
-      document.getElementById('form-servis-id').value = s.id;
+      document.getElementById('form-servis-id').value = sItem.id;
       document.getElementById('form-title').innerHTML = '<i data-lucide="edit-3" class="w-4 h-4"></i> Upravit servisní záznam';
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
 
-      document.getElementById('form-ukon').value = s.ukon;
+      document.getElementById('form-ukon').value = sItem.ukon;
       zmenaUkonu();
       
-      document.getElementById('form-odo').value = s.odo;
-      document.getElementById('form-cena').value = s.cena;
-      document.getElementById('form-poznamka').value = s.poznamka;
+      document.getElementById('form-odo').value = sItem.odo;
+      document.getElementById('form-cena').value = sItem.cena;
+      document.getElementById('form-poznamka').value = sItem.poznamka;
       
-      const maPodil = s.podilRidic > 0;
+      const maPodil = sItem.podilRidic > 0;
       document.getElementById('form-split').checked = maPodil;
-      document.getElementById('form-zaplaceno').checked = s.zaplaceno === "ANO";
+      document.getElementById('form-zaplaceno').checked = sItem.zaplaceno === "ANO";
 
       spocitatPodily();
       lucide.createIcons();
@@ -525,19 +578,38 @@
 
       const cena = parseFloat(document.getElementById('form-cena').value) || 0;
       const isSplit = document.getElementById('form-split').checked;
+      const isZaplaceno = document.getElementById('form-zaplaceno').checked;
       const isEdit = document.getElementById('form-servis-id').value !== '';
+      const ukon = document.getElementById('form-ukon').value;
+
+      const stavZaplaceno = isSplit ? (isZaplaceno ? "ANO" : "NE") : "ANO";
+
+      let uzivatelskaPoznamka = document.getElementById('form-poznamka').value.trim();
+      let specifikaceBrzd = [];
+
+      if (ukon === "Brzdy") {
+        if (document.getElementById('brzdy-predni-kotouce').checked) specifikaceBrzd.push("Přední kotouče");
+        if (document.getElementById('brzdy-predni-desky').checked) specifikaceBrzd.push("Přední desky");
+        if (document.getElementById('brzdy-zadni-kotouce').checked) specifikaceBrzd.push("Zadní kotouče");
+        if (document.getElementById('brzdy-zadni-desky').checked) specifikaceBrzd.push("Zadní desky");
+
+        if (specifikaceBrzd.length > 0) {
+          const brzdovyText = "Díly: " + specifikaceBrzd.join(", ");
+          uzivatelskaPoznamka = uzivatelskaPoznamka ? brzdovyText + " | " + uzivatelskaPoznamka : brzdovyText;
+        }
+      }
 
       const payload = {
         action: isEdit ? 'updateServis' : 'createServis',
         servisId: document.getElementById('form-servis-id').value,
         autoId: document.getElementById('form-auto-id').value,
-        ukon: document.getElementById('form-ukon').value,
+        ukon: ukon,
         odo: document.getElementById('form-odo').value,
         cena: cena,
         podilRidic: isSplit ? Math.round(cena * 0.60) : 0,
         podilFirma: isSplit ? Math.round(cena * 0.40) : cena,
-        zaplaceno: isSplit ? (document.getElementById('form-zaplaceno').checked ? "ANO" : "NE") : "ANO",
-        poznamka: document.getElementById('form-poznamka').value,
+        zaplaceno: stavZaplaceno,
+        poznamka: uzivatelskaPoznamka,
         
         notifyOlej: document.getElementById('notify-olej').checked,
         intervalOlej: parseFloat(document.getElementById('inter-olej').value) || 0,
