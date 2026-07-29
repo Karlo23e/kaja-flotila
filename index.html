@@ -137,12 +137,20 @@
 
       <input type="hidden" id="ridic-modal-id">
 
-      <div class="space-y-3 text-xs">
-        <label class="block text-slate-400">Přiřazené vozidlo ve flotile</label>
-        <select id="ridic-select-auto" onchange="zmenitAutoRidici()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white focus:border-amber-400 focus:outline-none">
-          <option value="">-- Žádné auto přiřazeno --</option>
-        </select>
-        <p class="text-[11px] text-slate-500 italic">Změna se propíše do databáze automaticky po výběru.</p>
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Přiřazené vozidlo ve flotile</label>
+          <select id="ridic-select-auto" onchange="zmenitAutoRidici()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white focus:border-amber-400 focus:outline-none">
+            <option value="">-- Žádné auto přiřazeno --</option>
+          </select>
+          <p class="text-[11px] text-slate-500 italic mt-1">Změna se propíše do databáze automaticky po výběru.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800">
+          <button onclick="smazatRidice()" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 font-bold p-2.5 rounded-lg flex items-center justify-center gap-2 transition-all">
+            <i data-lucide="user-x" class="w-4 h-4"></i> Smazat řidiče z evidence
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -154,9 +162,14 @@
         <h2 id="modal-nazev" class="text-xl font-bold text-white">...</h2>
         <span id="modal-spz" class="inline-block bg-slate-800 text-amber-400 font-mono text-xs px-2.5 py-0.5 rounded border border-slate-700 font-bold mt-1">...</span>
       </div>
-      <button onclick="zavritDetail()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80 border border-slate-700 active:scale-95 transition-transform">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="smazatAuto()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all">
+          <i data-lucide="trash-2" class="w-4 h-4"></i> Smazat auto
+        </button>
+        <button onclick="zavritDetail()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80 border border-slate-700 active:scale-95 transition-transform">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
     </div>
 
     <div class="flex border-b border-slate-800 bg-slate-900/90 px-4 shrink-0">
@@ -563,12 +576,20 @@
         const autoObj = seznamAut.find(a => a.id == ridic.prirazeneAutoId);
         const autoText = autoObj ? `<span class="text-amber-400 font-bold">${autoObj.nazev} (${autoObj.rz})</span>` : '<span class="text-slate-500 italic">Nepřiřazeno</span>';
 
-        // Kontrola, jestli má jeho auto nějaký nezaplacený servis
         let alertNezaplacenoRidic = '';
         let borderRidicKarta = 'bg-slate-800/80 border border-slate-700 hover:border-slate-500';
         if (autoObj && autoObj.maNezaplaceno) {
           alertNezaplacenoRidic = '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border border-slate-900"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>';
           borderRidicKarta = 'bg-red-950/30 border-2 border-red-500/80 shadow-lg';
+        }
+
+        let telCislo = ridic.telefon ? ridic.telefon.toString().trim() : '';
+        let telHtml = '';
+
+        if (!telCislo || telCislo.includes('#')) {
+          telHtml = '<span class="text-slate-500">Bez telefonu</span>';
+        } else {
+          telHtml = `<a href="tel:${telCislo}" onclick="event.stopPropagation()" class="text-amber-400 hover:underline font-mono">${telCislo}</a>`;
         }
 
         grid.innerHTML += `
@@ -577,7 +598,9 @@
             <div class="flex justify-between items-start mb-2">
               <div>
                 <h2 class="text-lg font-bold text-white">${ridic.jmeno}</h2>
-                <div class="text-xs text-slate-400 font-mono mt-0.5"><i data-lucide="phone" class="w-3 h-3 inline"></i> ${ridic.telefon || 'Bez telefonu'}</div>
+                <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
+                  <i data-lucide="phone" class="w-3 h-3 inline"></i> ${telHtml}
+                </div>
               </div>
               <div class="text-xs bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300">
                 Auto: ${autoText}
@@ -614,6 +637,24 @@
       });
     }
 
+    function smazatAuto() {
+      const autoId = document.getElementById('form-auto-id').value;
+      const autoNazev = document.getElementById('modal-nazev').innerText;
+      if (!confirm(`Opravdu chceš trvale smazat vozidlo "${autoNazev}"? Smažou se i veškeré související servisní záznamy.`)) return;
+
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "deleteAuto", autoId: autoId })
+      }).then(r => r.json()).then(res => {
+        if (res.status === 'success') {
+          zavritDetail();
+          nactiData();
+        } else {
+          alert('Chyba při mazání vozidla.');
+        }
+      });
+    }
+
     function ulozitNovehoRidice(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save-ridic');
@@ -630,13 +671,36 @@
       });
     }
 
+    function smazatRidice() {
+      const ridicId = document.getElementById('ridic-modal-id').value;
+      const ridicJmeno = document.getElementById('ridic-modal-jmeno').innerText;
+      if (!confirm(`Opravdu chceš smazat řidiče "${ridicJmeno}" z evidence?`)) return;
+
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "deleteRidic", ridicId: ridicId })
+      }).then(r => r.json()).then(res => {
+        if (res.status === 'success') {
+          zavritDetailRidice();
+          nactiData();
+        } else {
+          alert('Chyba při mazání řidiče.');
+        }
+      });
+    }
+
     function otevritDetailRidice(ridicId) {
       const ridic = seznamRidicu.find(r => r.id == ridicId);
       if (!ridic) return;
 
       document.getElementById('ridic-modal-id').value = ridic.id;
       document.getElementById('ridic-modal-jmeno').innerText = ridic.jmeno;
-      document.getElementById('ridic-modal-tel').innerText = ridic.telefon ? ridic.telefon : 'Bez telefonu';
+      
+      let telOsetrenyModal = ridic.telefon;
+      if (!telOsetrenyModal || telOsetrenyModal.toString().includes('#')) {
+        telOsetrenyModal = 'Bez telefonu';
+      }
+      document.getElementById('ridic-modal-tel').innerText = telOsetrenyModal;
 
       const sel = document.getElementById('ridic-select-auto');
       sel.innerHTML = '<option value="">-- Žádné auto přiřazeno --</option>';
@@ -925,7 +989,7 @@
         ukon: ukon, odo: document.getElementById('form-odo').value, cena: cena,
         podilRidic: isSplit ? Math.round(cena * 0.60) : 0,
         podilFirma: isSplit ? Math.round(cena * 0.40) : cena,
-        zaplaceno: isZaplaceno, // Předává se správný booleovský stav checkboxu
+        zaplaceno: isZaplaceno,
         poznamka: uzivatelskaPoznamka,
         notifyOlej: document.getElementById('notify-olej').checked, intervalOlej: parseFloat(document.getElementById('inter-olej').value) || 0,
         notifyKabinovy: document.getElementById('notify-kabinovy').checked, intervalKabinovy: parseFloat(document.getElementById('inter-kabinovy').value) || 0,
