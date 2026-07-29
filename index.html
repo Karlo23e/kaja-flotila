@@ -563,8 +563,17 @@
         const autoObj = seznamAut.find(a => a.id == ridic.prirazeneAutoId);
         const autoText = autoObj ? `<span class="text-amber-400 font-bold">${autoObj.nazev} (${autoObj.rz})</span>` : '<span class="text-slate-500 italic">Nepřiřazeno</span>';
 
+        // Kontrola, jestli má jeho auto nějaký nezaplacený servis
+        let alertNezaplacenoRidic = '';
+        let borderRidicKarta = 'bg-slate-800/80 border border-slate-700 hover:border-slate-500';
+        if (autoObj && autoObj.maNezaplaceno) {
+          alertNezaplacenoRidic = '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border border-slate-900"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>';
+          borderRidicKarta = 'bg-red-950/30 border-2 border-red-500/80 shadow-lg';
+        }
+
         grid.innerHTML += `
-          <div onclick="otevritDetailRidice('${ridic.id}')" class="bg-slate-800/80 border border-slate-700 hover:border-slate-500 rounded-xl p-5 cursor-pointer active:scale-[0.98] transition-all flex flex-col justify-between min-h-[110px]">
+          <div onclick="otevritDetailRidice('${ridic.id}')" class="${borderRidicKarta} rounded-xl p-5 cursor-pointer active:scale-[0.98] transition-all flex flex-col justify-between min-h-[110px] relative">
+            ${alertNezaplacenoRidic}
             <div class="flex justify-between items-start mb-2">
               <div>
                 <h2 class="text-lg font-bold text-white">${ridic.jmeno}</h2>
@@ -627,7 +636,7 @@
 
       document.getElementById('ridic-modal-id').value = ridic.id;
       document.getElementById('ridic-modal-jmeno').innerText = ridic.jmeno;
-      document.getElementById('ridic-modal-tel').innerText = ridic.telefon || 'Bez telefonu';
+      document.getElementById('ridic-modal-tel').innerText = ridic.telefon ? ridic.telefon : 'Bez telefonu';
 
       const sel = document.getElementById('ridic-select-auto');
       sel.innerHTML = '<option value="">-- Žádné auto přiřazeno --</option>';
@@ -895,7 +904,6 @@
       const isZaplaceno = document.getElementById('form-zaplaceno').checked;
       const isEdit = document.getElementById('form-servis-id').value !== '';
       const ukon = document.getElementById('form-ukon').value;
-      const stavZaplaceno = isSplit ? (isZaplaceno ? "ANO" : "NE") : "ANO";
 
       let uzivatelskaPoznamka = document.getElementById('form-poznamka').value.trim();
       let specifikaceBrzd = [];
@@ -917,7 +925,8 @@
         ukon: ukon, odo: document.getElementById('form-odo').value, cena: cena,
         podilRidic: isSplit ? Math.round(cena * 0.60) : 0,
         podilFirma: isSplit ? Math.round(cena * 0.40) : cena,
-        zaplaceno: stavZaplaceno, poznamka: uzivatelskaPoznamka,
+        zaplaceno: isZaplaceno, // Předává se správný booleovský stav checkboxu
+        poznamka: uzivatelskaPoznamka,
         notifyOlej: document.getElementById('notify-olej').checked, intervalOlej: parseFloat(document.getElementById('inter-olej').value) || 0,
         notifyKabinovy: document.getElementById('notify-kabinovy').checked, intervalKabinovy: parseFloat(document.getElementById('inter-kabinovy').value) || 0,
         notifyVzduchovy: document.getElementById('notify-vzduchovy').checked, intervalVzduchovy: parseFloat(document.getElementById('inter-vzduchovy').value) || 0,
