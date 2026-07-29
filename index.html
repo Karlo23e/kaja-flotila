@@ -44,9 +44,7 @@
       <p>Načítám auta z databáze...</p>
     </div>
 
-    <div id="grid-auta" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-      <!-- Auta se načtou sem -->
-    </div>
+    <div id="grid-auta" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden"></div>
   </main>
 
   <!-- MODÁLNÍ OKNO DETAILU AUTA -->
@@ -67,23 +65,100 @@
       <!-- Obsah modálu -->
       <div class="p-4 sm:p-6 overflow-y-auto space-y-6">
         
-        <!-- Formulář pro nový servis -->
+        <!-- Formulář pro servis -->
         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
-          <h3 class="text-md font-bold text-amber-400 mb-3 flex items-center gap-2">
-            <i data-lucide="wrench" class="w-4 h-4"></i> Zapsat nový servis / opravu
-          </h3>
+          <div class="flex justify-between items-center mb-3">
+            <h3 id="form-title" class="text-md font-bold text-amber-400 flex items-center gap-2">
+              <i data-lucide="wrench" class="w-4 h-4"></i> Zapsat nový servis / opravu
+            </h3>
+            <button id="btn-cancel-edit" onclick="resetFormulare()" class="text-xs text-slate-400 hover:text-white underline hidden">
+              Zrušit úpravu
+            </button>
+          </div>
           
           <form id="form-servis" onsubmit="ulozitServis(event)" class="space-y-3">
             <input type="hidden" id="form-auto-id">
+            <input type="hidden" id="form-servis-id">
             
             <div>
               <label class="block text-xs text-slate-400 mb-1">Druh úkonu</label>
-              <select id="form-ukon" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
+              <select id="form-ukon" onchange="zmenaUkonu()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
                 <option value="Olej + Filtry">Olej + Filtry</option>
                 <option value="Brzdy">Brzdy</option>
                 <option value="Pneumatiky">Pneumatiky</option>
                 <option value="Běžný servis / Oprava">Běžný servis / Oprava</option>
               </select>
+            </div>
+
+            <!-- SEKCIE HLÍDÁNÍ INTERVALŮ OLEJE A FILTRŮ -->
+            <div id="box-intervaly" class="bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-3">
+              <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i> Nastavení upozornění příští výměny
+              </h4>
+
+              <!-- Motorový olej -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-200">Motorový olej</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="notify-olej" checked onchange="toggleIntervalInput('olej')" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                <div id="wrap-inter-olej" class="flex items-center gap-2 pl-2">
+                  <span class="text-[11px] text-slate-400">Upozornit za:</span>
+                  <input type="number" id="inter-olej" value="12000" placeholder="km" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono">
+                  <span class="text-[11px] text-slate-400">km</span>
+                </div>
+              </div>
+
+              <!-- Kabinový filtr -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-200">Kabinový filtr</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="notify-kabinovy" onchange="toggleIntervalInput('kabinovy')" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                <div id="wrap-inter-kabinovy" class="flex items-center gap-2 pl-2 hidden">
+                  <span class="text-[11px] text-slate-400">Upozornit za:</span>
+                  <input type="number" id="inter-kabinovy" value="20000" placeholder="km" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono">
+                  <span class="text-[11px] text-slate-400">km</span>
+                </div>
+              </div>
+
+              <!-- Vzduchový filtr -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-200">Vzduchový filtr</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="notify-vzduchovy" onchange="toggleIntervalInput('vzduchovy')" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                <div id="wrap-inter-vzduchovy" class="flex items-center gap-2 pl-2 hidden">
+                  <span class="text-[11px] text-slate-400">Upozornit za:</span>
+                  <input type="number" id="inter-vzduchovy" value="30000" placeholder="km" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono">
+                  <span class="text-[11px] text-slate-400">km</span>
+                </div>
+              </div>
+
+              <!-- Palivový filtr -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-200">Palivový filtr</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="notify-palivovy" onchange="toggleIntervalInput('palivovy')" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                <div id="wrap-inter-palivovy" class="flex items-center gap-2 pl-2 hidden">
+                  <span class="text-[11px] text-slate-400">Upozornit za:</span>
+                  <input type="number" id="inter-palivovy" value="40000" placeholder="km" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono">
+                  <span class="text-[11px] text-slate-400">km</span>
+                </div>
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -97,12 +172,16 @@
               </div>
             </div>
 
-            <!-- Přepínač 60/40 -->
-            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-2">
-              <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-300">
-                <input type="checkbox" id="form-split" onchange="spocitatPodily()" class="w-4 h-4 text-amber-400 rounded focus:ring-amber-400 focus:ring-offset-slate-900 bg-slate-800 border-slate-700">
-                Rozpočítat díly (60 % Řidič / 40 % Firma)
-              </label>
+            <!-- Přepínač Toggle 0 / 1 pro Rozpočet 60/40 -->
+            <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-slate-200">Rozpočítat díly (60 % Řidič / 40 % Firma)</span>
+                
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="form-split" onchange="spocitatPodily()" class="sr-only peer">
+                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+              </div>
 
               <div id="split-preview" class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800 hidden">
                 <div class="text-amber-400">Řidič (60 %): <span id="val-ridic" class="font-mono font-bold">0</span> Kč</div>
@@ -110,9 +189,20 @@
               </div>
             </div>
 
+            <!-- Stav zaplacení pro řidiče -->
+            <div id="box-zaplaceno" class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 hidden">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-slate-200">Podíl řidiče je již zaplacen</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="form-zaplaceno" class="sr-only peer">
+                  <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+            </div>
+
             <div>
               <label class="block text-xs text-slate-400 mb-1">Poznámka / Detail úkonu</label>
-              <input type="text" id="form-poznamka" placeholder="např. Přední desky + kotouče Brembo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
+              <input type="text" id="form-poznamka" placeholder="např. Olej 5W-30 RCP + všechny filtry" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
             </div>
 
             <button type="submit" id="btn-ulozit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-lg active:scale-[0.99] transition-transform flex items-center justify-center gap-2">
@@ -127,7 +217,7 @@
             <i data-lucide="history" class="w-4 h-4"></i> Historie servisů
           </h3>
           <div id="servis-loader" class="text-center py-4 text-xs text-slate-500">Načítám historii...</div>
-          <div id="servis-historie" class="space-y-2"></div>
+          <div id="servis-historie" class="space-y-2.5"></div>
         </div>
 
       </div>
@@ -137,6 +227,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwCHGUiAOMm6VV6VwJUD16siSg26jFjiR03HpbwImKst9mZn32_CBEwG6Y1Nn5VB-pQoQ/exec";
     let seznamAut = [];
+    let aktualniServisy = [];
 
     window.onload = function() {
       lucide.createIcons();
@@ -160,17 +251,39 @@
       grid.innerHTML = '';
 
       auta.forEach(auto => {
-        const jeServis = auto.status && auto.status.toUpperCase() === 'SERVIS';
-        const bgKarta = jeServis 
-          ? 'bg-red-950/40 border-2 border-red-500 shadow-lg shadow-red-950/50' 
-          : 'bg-slate-800/80 border border-slate-700 hover:border-slate-500';
+        let bgKarta = 'bg-slate-800/80 border border-slate-700 hover:border-slate-500';
+        let statusBadge = '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> OK</span>';
 
-        const statusBadge = jeServis
-          ? '<span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SERVIS</span>'
-          : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> OK</span>';
+        const status = auto.status ? auto.status.toUpperCase() : 'OK';
+
+        // 1. Oranžové varování (zbývá 3 500 – 2 001 km)
+        if (status === 'ORANZOVA') {
+          bgKarta = 'bg-amber-950/30 border-2 border-amber-500 shadow-lg shadow-amber-950/40';
+          statusBadge = '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> SERVIS BRZY</span>';
+        }
+        // 2. Červené varování (zbývá 2 000 – 1 001 km)
+        else if (status === 'CERVENA') {
+          bgKarta = 'bg-red-950/40 border-2 border-red-500 shadow-lg shadow-red-950/50';
+          statusBadge = '<span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SERVIS BLÍZKO</span>';
+        }
+        // 3. Kritické varování (zbývá <= 1 000 km nebo přetaženo)
+        else if (status === 'KRITICKE' || status === 'SERVIS') {
+          bgKarta = 'bg-red-950/70 border-2 border-red-600 shadow-xl shadow-red-950/80 animate-pulse';
+          statusBadge = '<span class="bg-red-600 text-white font-black text-xs px-3 py-1 rounded-full flex items-center gap-1 shadow-md animate-bounce"><i data-lucide="alert-octagon" class="w-4 h-4"></i> ! NUTNÝ SERVIS</span>';
+        }
+
+        // Pokud je nezaplacený podíl řidiče, přidat ikonku vykřičníku na kartu
+        const alertNezaplaceno = auto.maNezaplaceno 
+          ? '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border border-slate-900" title="Obsahuje nezaplacený servis!"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>' 
+          : '';
+
+        const zbyvaText = (auto.zbyvaKm !== null) 
+          ? `<div class="text-xs text-slate-400 font-mono mt-0.5">Do servisu: <span class="font-bold ${auto.zbyvaKm <= 1000 ? 'text-red-400 font-black' : (auto.zbyvaKm <= 3500 ? 'text-amber-400' : 'text-emerald-400')}">${Number(auto.zbyvaKm).toLocaleString('cs-CZ')} km</span></div>`
+          : '';
 
         grid.innerHTML += `
-          <div onclick="otevritDetail(${auto.id})" class="${bgKarta} rounded-xl p-5 cursor-pointer active:scale-[0.98] transition-all flex flex-col justify-between min-h-[120px]">
+          <div onclick="otevritDetail(${auto.id})" class="${bgKarta} rounded-xl p-5 cursor-pointer active:scale-[0.98] transition-all flex flex-col justify-between min-h-[130px] relative">
+            ${alertNezaplaceno}
             <div class="flex justify-between items-start mb-3">
               <div>
                 <h2 class="text-xl font-bold text-white tracking-wide">${auto.nazev}</h2>
@@ -180,7 +293,10 @@
             </div>
             
             <div class="flex justify-between items-end pt-3 border-t border-slate-700/50 text-sm">
-              <div class="text-slate-400">Tachometr: <span class="text-white font-mono font-semibold">${Number(auto.odo).toLocaleString('cs-CZ')} km</span></div>
+              <div>
+                <div class="text-slate-400 text-xs">Tachometr: <span class="text-white font-mono font-semibold">${Number(auto.odo).toLocaleString('cs-CZ')} km</span></div>
+                ${zbyvaText}
+              </div>
               <div class="text-xs text-amber-400 font-medium flex items-center gap-1">Detail <i data-lucide="chevron-right" class="w-4 h-4"></i></div>
             </div>
           </div>
@@ -192,6 +308,23 @@
       lucide.createIcons();
     }
 
+    function zmenaUkonu() {
+      const ukon = document.getElementById('form-ukon').value;
+      const box = document.getElementById('box-intervaly');
+      if (ukon === "Olej + Filtry") {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function toggleIntervalInput(typ) {
+      const chk = document.getElementById('notify-' + typ).checked;
+      const wrap = document.getElementById('wrap-inter-' + typ);
+      if (chk) wrap.classList.remove('hidden');
+      else wrap.classList.add('hidden');
+    }
+
     function otevritDetail(autoId) {
       const auto = seznamAut.find(a => a.id == autoId);
       if (!auto) return;
@@ -199,11 +332,13 @@
       document.getElementById('modal-nazev').innerText = auto.nazev;
       document.getElementById('modal-spz').innerText = auto.rz;
       document.getElementById('form-auto-id').value = auto.id;
-      document.getElementById('form-odo').value = auto.odo;
-      document.getElementById('form-cena').value = '';
-      document.getElementById('form-poznamka').value = '';
-      document.getElementById('form-split').checked = false;
-      spocitatPodily();
+      
+      resetFormulare(auto.odo);
+
+      if (auto.olejInterval) document.getElementById('inter-olej').value = auto.olejInterval;
+      if (auto.kabinovyInterval) document.getElementById('inter-kabinovy').value = auto.kabinovyInterval;
+      if (auto.vzduchovyInterval) document.getElementById('inter-vzduchovy').value = auto.vzduchovyInterval;
+      if (auto.palivovyInterval) document.getElementById('inter-palivovy').value = auto.palivovyInterval;
 
       document.getElementById('modal-detail').classList.remove('hidden');
       lucide.createIcons();
@@ -214,17 +349,45 @@
       document.getElementById('modal-detail').classList.add('hidden');
     }
 
+    function resetFormulare(vychoziOdo) {
+      document.getElementById('form-servis-id').value = '';
+      document.getElementById('form-title').innerHTML = '<i data-lucide="wrench" class="w-4 h-4"></i> Zapsat nový servis / opravu';
+      document.getElementById('btn-cancel-edit').classList.add('hidden');
+      document.getElementById('form-ukon').value = 'Olej + Filtry';
+      document.getElementById('form-cena').value = '';
+      document.getElementById('form-poznamka').value = '';
+      document.getElementById('form-split').checked = false;
+      document.getElementById('form-zaplaceno').checked = false;
+      
+      document.getElementById('notify-olej').checked = true;
+      document.getElementById('notify-kabinovy').checked = false;
+      document.getElementById('notify-vzduchovy').checked = false;
+      document.getElementById('notify-palivovy').checked = false;
+      toggleIntervalInput('olej');
+      toggleIntervalInput('kabinovy');
+      toggleIntervalInput('vzduchovy');
+      toggleIntervalInput('palivovy');
+
+      if (vychoziOdo) document.getElementById('form-odo').value = vychoziOdo;
+      zmenaUkonu();
+      spocitatPodily();
+      lucide.createIcons();
+    }
+
     function spocitatPodily() {
       const cena = parseFloat(document.getElementById('form-cena').value) || 0;
       const isSplit = document.getElementById('form-split').checked;
       const preview = document.getElementById('split-preview');
+      const boxZaplaceno = document.getElementById('box-zaplaceno');
 
       if (isSplit && cena > 0) {
         document.getElementById('val-ridic').innerText = Math.round(cena * 0.60).toLocaleString('cs-CZ');
         document.getElementById('val-firma').innerText = Math.round(cena * 0.40).toLocaleString('cs-CZ');
         preview.classList.remove('hidden');
+        boxZaplaceno.classList.remove('hidden');
       } else {
         preview.classList.add('hidden');
+        boxZaplaceno.classList.add('hidden');
       }
     }
 
@@ -237,32 +400,121 @@
       fetch(API_URL + "?action=getServisy&autoId=" + autoId)
         .then(r => r.json())
         .then(data => {
+          aktualniServisy = data;
           loader.classList.add('hidden');
           if (data.length === 0) {
             histDiv.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-2">Zatím žádné servisní záznamy.</p>';
             return;
           }
           data.forEach(s => {
-            const splitInfo = (s.podilRidic > 0) 
-              ? `<div class="text-[10px] text-amber-400 mt-1">Řidič: ${Number(s.podilRidic).toLocaleString('cs-CZ')} Kč | Firma: ${Number(s.podilFirma).toLocaleString('cs-CZ')} Kč</div>`
-              : '';
+            const maPodil = s.podilRidic > 0;
+            const jeZaplaceno = s.zaplaceno === "ANO";
+            const chybiZaplatit = maPodil && !jeZaplaceno;
+
+            const borderKarta = chybiZaplatit 
+              ? 'border-red-500/80 bg-red-950/20' 
+              : 'border-slate-700/60 bg-slate-800/40';
+
+            const zaplacenoBadge = maPodil ? `
+              <div class="mt-2 pt-2 border-t border-slate-700/50 flex justify-between items-center">
+                <span class="text-[11px] ${jeZaplaceno ? 'text-emerald-400 font-semibold flex items-center gap-1' : 'text-red-400 font-bold flex items-center gap-1 animate-pulse'}">
+                  ${jeZaplaceno ? '<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Zaplaceno (60% Řidič)' : '<i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i> NEZAPLACENO (' + Number(s.podilRidic).toLocaleString('cs-CZ') + ' Kč)'}
+                </span>
+                <button onclick="prepnutZaplaceno('${s.id}')" class="text-[11px] px-2 py-1 rounded border ${jeZaplaceno ? 'bg-slate-800 border-slate-600 text-slate-300' : 'bg-red-500 hover:bg-red-600 border-red-400 text-white font-bold'}">
+                  ${jeZaplaceno ? 'Označit jako nezaplacené' : 'Označit ZAPLACENO'}
+                </button>
+              </div>
+            ` : '';
 
             histDiv.innerHTML += `
-              <div class="bg-slate-800/40 border border-slate-700/60 p-3 rounded-lg text-xs space-y-1">
-                <div class="flex justify-between font-bold text-slate-200">
-                  <span>${s.ukon}</span>
-                  <span class="text-amber-400 font-mono">${Number(s.cena).toLocaleString('cs-CZ')} Kč</span>
+              <div class="${borderKarta} border p-3.5 rounded-xl text-xs space-y-1.5 relative">
+                ${chybiZaplatit ? '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>' : ''}
+                
+                <div class="flex justify-between items-start pr-4">
+                  <div>
+                    <span class="font-bold text-slate-200 text-sm">${s.ukon}</span>
+                    <span class="text-[10px] text-slate-400 block">${s.datum}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-amber-400 font-mono font-bold text-sm block">${Number(s.cena).toLocaleString('cs-CZ')} Kč</span>
+                    <span class="font-mono text-[11px] text-slate-400">${Number(s.odo).toLocaleString('cs-CZ')} km</span>
+                  </div>
                 </div>
-                <div class="flex justify-between text-slate-400">
-                  <span>${new Date(s.datum).toLocaleDateString('cs-CZ')}</span>
-                  <span class="font-mono">${Number(s.odo).toLocaleString('cs-CZ')} km</span>
+
+                ${s.poznamka ? `<div class="text-slate-300 italic text-[11px] bg-slate-900/50 p-1.5 rounded">${s.poznamka}</div>` : ''}
+                
+                ${zaplacenoBadge}
+
+                <div class="pt-2 flex justify-end gap-3 border-t border-slate-800/60 mt-2">
+                  <button onclick="nacetDoEditace('${s.id}')" class="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Upravit
+                  </button>
+                  <button onclick="smazatServis('${s.id}')" class="text-[11px] text-red-400 hover:text-red-300 flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Smazat
+                  </button>
                 </div>
-                ${s.poznamka ? `<div class="text-slate-300 italic pt-0.5">${s.poznamka}</div>` : ''}
-                ${splitInfo}
               </div>
             `;
           });
+          lucide.createIcons();
         });
+    }
+
+    function prepnutZaplaceno(servisId) {
+      const autoId = document.getElementById('form-auto-id').value;
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'toggleZaplaceno', servisId: servisId })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success') {
+          nacistHistoriiServisu(autoId);
+          nacistAuta();
+        }
+      });
+    }
+
+    function nacetDoEditace(servisId) {
+      const s = aktualniServisy.find(item => item.id == servisId);
+      if (!s) return;
+
+      document.getElementById('form-servis-id').value = s.id;
+      document.getElementById('form-title').innerHTML = '<i data-lucide="edit-3" class="w-4 h-4"></i> Upravit servisní záznam';
+      document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+      document.getElementById('form-ukon').value = s.ukon;
+      zmenaUkonu();
+      
+      document.getElementById('form-odo').value = s.odo;
+      document.getElementById('form-cena').value = s.cena;
+      document.getElementById('form-poznamka').value = s.poznamka;
+      
+      const maPodil = s.podilRidic > 0;
+      document.getElementById('form-split').checked = maPodil;
+      document.getElementById('form-zaplaceno').checked = s.zaplaceno === "ANO";
+
+      spocitatPodily();
+      lucide.createIcons();
+    }
+
+    function smazatServis(servisId) {
+      if (!confirm("Opravdu chcete tento servisní záznam smazat z databáze?")) return;
+      
+      const autoId = document.getElementById('form-auto-id').value;
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteServis', servisId: servisId })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success') {
+          nacistHistoriiServisu(autoId);
+          nacistAuta();
+        } else {
+          alert('Chyba při mazání záznamu.');
+        }
+      });
     }
 
     function ulozitServis(e) {
@@ -273,15 +525,28 @@
 
       const cena = parseFloat(document.getElementById('form-cena').value) || 0;
       const isSplit = document.getElementById('form-split').checked;
+      const isEdit = document.getElementById('form-servis-id').value !== '';
 
       const payload = {
+        action: isEdit ? 'updateServis' : 'createServis',
+        servisId: document.getElementById('form-servis-id').value,
         autoId: document.getElementById('form-auto-id').value,
         ukon: document.getElementById('form-ukon').value,
         odo: document.getElementById('form-odo').value,
         cena: cena,
         podilRidic: isSplit ? Math.round(cena * 0.60) : 0,
         podilFirma: isSplit ? Math.round(cena * 0.40) : cena,
-        poznamka: document.getElementById('form-poznamka').value
+        zaplaceno: isSplit ? (document.getElementById('form-zaplaceno').checked ? "ANO" : "NE") : "ANO",
+        poznamka: document.getElementById('form-poznamka').value,
+        
+        notifyOlej: document.getElementById('notify-olej').checked,
+        intervalOlej: parseFloat(document.getElementById('inter-olej').value) || 0,
+        notifyKabinovy: document.getElementById('notify-kabinovy').checked,
+        intervalKabinovy: parseFloat(document.getElementById('inter-kabinovy').value) || 0,
+        notifyVzduchovy: document.getElementById('notify-vzduchovy').checked,
+        intervalVzduchovy: parseFloat(document.getElementById('inter-vzduchovy').value) || 0,
+        notifyPalivovy: document.getElementById('notify-palivovy').checked,
+        intervalPalivovy: parseFloat(document.getElementById('inter-palivovy').value) || 0
       };
 
       fetch(API_URL, {
@@ -293,8 +558,9 @@
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Uložit servis do databáze';
         if (res.status === 'success') {
-          alert('Servis úspěšně uložen!');
-          zavritDetail();
+          const autoId = document.getElementById('form-auto-id').value;
+          resetFormulare();
+          nacistHistoriiServisu(autoId);
           nacistAuta();
         } else {
           alert('Chyba při ukládání: ' + res.message);
