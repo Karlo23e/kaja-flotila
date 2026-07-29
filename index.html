@@ -254,7 +254,7 @@
                   <span class="text-amber-400 font-mono">${Number(s.cena).toLocaleString('cs-CZ')} Kč</span>
                 </div>
                 <div class="flex justify-between text-slate-400">
-                  <span>${s.datum}</span>
+                  <span>${new Date(s.datum).toLocaleDateString('cs-CZ')}</span>
                   <span class="font-mono">${Number(s.odo).toLocaleString('cs-CZ')} km</span>
                 </div>
                 ${s.poznamka ? `<div class="text-slate-300 italic pt-0.5">${s.poznamka}</div>` : ''}
