@@ -230,15 +230,15 @@
             <div class="space-y-3 text-xs">
               <div>
                 <label class="block text-slate-400 mb-1">Malý TP - Přední strana (Fotka)</label>
-                <input type="file" id="input-file-maly-tp-predni" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
+                <input type="file" name="fileMalyTpPredni" id="input-file-maly-tp-predni" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
               </div>
               <div>
                 <label class="block text-slate-400 mb-1">Malý TP - Zadní strana (Fotka)</label>
-                <input type="file" id="input-file-maly-tp-zadni" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
+                <input type="file" name="fileMalyTpZadni" id="input-file-maly-tp-zadni" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
               </div>
               <div>
                 <label class="block text-slate-400 mb-1">Zelená karta (POV - PDF nebo Fotka)</label>
-                <input type="file" id="input-file-pov" accept="image/*,.pdf" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
+                <input type="file" name="filePov" id="input-file-pov" accept="image/*,.pdf" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
               </div>
             </div>
             <div class="flex justify-end gap-2 pt-1">
@@ -461,11 +461,8 @@
       nactiData();
     };
 
-    function nactiData() {
+    function nactiData(cb) {
       document.getElementById('loader').classList.remove('hidden');
-      document.getElementById('grid-auta').classList.add('hidden');
-      document.getElementById('grid-ridici').classList.add('hidden');
-      document.getElementById('grid-partneri').classList.add('hidden');
 
       fetch(API_URL + "?action=getData")
         .then(response => response.json())
@@ -481,6 +478,8 @@
           vyrenderovatRidice(seznamRidicu);
           vyrenderovatPartnery(seznamPartneru);
           prepnutHlavniTab(aktivniHlavniTab);
+
+          if (cb) cb();
         });
     }
 
@@ -501,17 +500,49 @@
       lucide.createIcons();
     }
 
+    // NOVÉ ZOBRAZENÍ KARET AUT S PREHLEDEM INTERVALŮ A TERMÍNŮ
     function vyrenderovatAuta(auta) {
       const grid = document.getElementById('grid-auta');
       grid.innerHTML = '';
       auta.forEach(auto => {
+        let kmText = 'Nenastaveno';
+        let kmClass = 'text-slate-500';
+
+        if (auto.zbyvaKm !== null && auto.zbyvaKm !== undefined) {
+          kmText = Number(auto.zbyvaKm).toLocaleString('cs-CZ') + ' km';
+          if (auto.zbyvaKm <= 1000) kmClass = 'text-red-400 font-bold animate-pulse';
+          else if (auto.zbyvaKm <= 3500) kmClass = 'text-amber-400 font-bold';
+          else kmClass = 'text-emerald-400 font-bold';
+        }
+
         grid.innerHTML += `
-          <div onclick="otevritDetail(${auto.id})" class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 cursor-pointer flex justify-between items-start">
-            <div>
-              <h2 class="text-xl font-bold text-white">${auto.nazev}</h2>
-              <div class="inline-block bg-slate-900 text-amber-400 font-mono text-xs px-2.5 py-1 rounded border border-slate-700 font-bold mt-1">${auto.rz}</div>
+          <div onclick="otevritDetail(${auto.id})" class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 cursor-pointer hover:border-amber-400/50 transition-all space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">${auto.nazev}</h2>
+                <span class="inline-block bg-slate-900 text-slate-400 font-mono text-[11px] px-2 py-0.5 rounded border border-slate-700 font-semibold mt-1">${auto.rz}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block uppercase tracking-wider">Servis za:</span>
+                <span class="font-mono text-sm ${kmClass}">${kmText}</span>
+              </div>
             </div>
-            <div class="text-xs text-amber-400 font-medium">Detail <i data-lucide="chevron-right" class="w-4 h-4 inline"></i></div>
+
+            <!-- Prehled termínů STK, Dálnice a HAV přímo na kartě -->
+            <div class="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-700/60 text-[11px] text-center">
+              <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800">
+                <span class="text-slate-500 text-[9px] block">STK</span>
+                <span class="font-mono text-slate-200 font-semibold">${auto.stk || 'Neuvedeno'}</span>
+              </div>
+              <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800">
+                <span class="text-slate-500 text-[9px] block">DÁLNICE</span>
+                <span class="font-mono text-slate-200 font-semibold">${auto.dalnicni || 'Neuvedeno'}</span>
+              </div>
+              <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800">
+                <span class="text-slate-500 text-[9px] block">HAV</span>
+                <span class="font-mono text-slate-200 font-semibold">${auto.hav || 'Neuvedeno'}</span>
+              </div>
+            </div>
           </div>
         `;
       });
@@ -623,9 +654,9 @@
       formatKmBox('val-km-palivovy', d.palivovy);
 
       // ZOBRAZENÍ SOUBORŮ
-      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<a href="${auto.malyTpPredniUrl}" target="_blank" class="underline text-amber-400 font-bold">Zobrazit</a>` : "Nenahráno";
-      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<a href="${auto.malyTpZadniUrl}" target="_blank" class="underline text-amber-400 font-bold">Zobrazit</a>` : "Nenahráno";
-      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="underline text-amber-400 font-bold">Zobrazit</a>` : "Nenahráno";
+      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<a href="${auto.malyTpPredniUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Otevřít</a>` : '<span class="text-slate-500">Nenahráno</span>';
+      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<a href="${auto.malyTpZadniUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Otevřít</a>` : '<span class="text-slate-500">Nenahráno</span>';
+      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Otevřít</a>` : '<span class="text-slate-500">Nenahráno</span>';
 
       const sel = document.getElementById('plan-partner-select');
       sel.innerHTML = '<option value="">-- Bez konkrétního servisu --</option>';
@@ -675,58 +706,43 @@
       }).then(r => r.json()).then(res => {
         btn.disabled = false; btn.innerText = "Uložit termíny";
         if (res.status === 'success') {
-          toggleFormularTerminy(); nactiData();
-          if (stkVal) document.getElementById('val-stk').innerText = formatInputDate(stkVal);
-          if (dalnicniVal) document.getElementById('val-dalnicni').innerText = formatInputDate(dalnicniVal);
-          if (havVal) document.getElementById('val-hav').innerText = formatInputDate(havVal);
+          toggleFormularTerminy();
+          nactiData(() => otevritDetail(autoId));
         } else { alert('Chyba při ukládání termínů.'); }
       });
     }
 
-    async function ulozitDokumenty(e) {
+    function ulozitDokumenty(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save-dok');
       btn.disabled = true;
       btn.innerText = "Nahrávám soubory...";
 
       const autoId = document.getElementById('form-auto-id').value;
-      const fileMalyTpPredni = document.getElementById('input-file-maly-tp-predni').files[0];
-      const fileMalyTpZadni = document.getElementById('input-file-maly-tp-zadni').files[0];
-      const filePov = document.getElementById('input-file-pov').files[0];
-
-      const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-
-      let malyTpPredniBase64 = fileMalyTpPredni ? await toBase64(fileMalyTpPredni) : null;
-      let malyTpZadniBase64 = fileMalyTpZadni ? await toBase64(fileMalyTpZadni) : null;
-      let povBase64 = filePov ? await toBase64(filePov) : null;
+      const formElement = document.getElementById('form-dokumenty');
+      const formData = new FormData(formElement);
+      formData.append("action", "updateDokumentyAuto");
+      formData.append("autoId", autoId);
 
       fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({
-          action: "updateDokumentyAuto",
-          autoId: autoId,
-          malyTpPredniBase64: malyTpPredniBase64,
-          malyTpZadniBase64: malyTpZadniBase64,
-          povBase64: povBase64
-        })
-      }).then(r => r.json()).then(res => {
+        body: formData
+      })
+      .then(r => r.json())
+      .then(res => {
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát a uložit dokumenty';
         if (res.status === 'success') {
           toggleFormularDokumenty();
-          nactiData();
+          nactiData(() => otevritDetail(autoId));
         } else {
-          alert("Chyba při nahrávání souborů.");
+          alert("Chyba při nahrávání.");
         }
-      }).catch(err => {
+      })
+      .catch(err => {
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát a uložit dokumenty';
-        alert("Chyba při nahrávání.");
+        alert("Chyba při odesílání.");
       });
     }
 
