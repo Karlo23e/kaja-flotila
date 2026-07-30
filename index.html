@@ -454,7 +454,7 @@
         </div>
       </div>
 
-      <!-- ZÁLOŽKA: NOVÝ SERVIS (3 možnosti rozdělení nákladů) -->
+      <!-- ZÁLOŽKA: NOVÝ SERVIS -->
       <div id="tab-novy" class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 hidden">
         <div class="flex justify-between items-center mb-3">
           <h3 id="form-title" class="text-md font-bold text-amber-400 flex items-center gap-2">
@@ -481,7 +481,9 @@
             <h4 class="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
               <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i> Upozornění příští výměny
             </h4>
-            <div class="space-y-1.5">
+            
+            <!-- Motorový olej -->
+            <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
               <div class="flex items-center justify-between">
                 <span class="font-medium text-slate-200">Motorový olej</span>
                 <input type="checkbox" id="notify-olej" checked onchange="toggleIntervalInput('olej')">
@@ -490,6 +492,40 @@
                 <input type="number" id="inter-olej" value="12000" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white font-mono"> km
               </div>
             </div>
+
+            <!-- Kabinový filtr -->
+            <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-slate-200">Kabinový filtr</span>
+                <input type="checkbox" id="notify-kabinovy" checked onchange="toggleIntervalInput('kabinovy')">
+              </div>
+              <div id="wrap-inter-kabinovy" class="flex items-center gap-2 pl-2">
+                <input type="number" id="inter-kabinovy" value="24000" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white font-mono"> km
+              </div>
+            </div>
+
+            <!-- Vzduchový filtr -->
+            <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-slate-200">Vzduchový filtr</span>
+                <input type="checkbox" id="notify-vzduchovy" checked onchange="toggleIntervalInput('vzduchovy')">
+              </div>
+              <div id="wrap-inter-vzduchovy" class="flex items-center gap-2 pl-2">
+                <input type="number" id="inter-vzduchovy" value="24000" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white font-mono"> km
+              </div>
+            </div>
+
+            <!-- Palivový filtr -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-slate-200">Palivový filtr</span>
+                <input type="checkbox" id="notify-palivovy" checked onchange="toggleIntervalInput('palivovy')">
+              </div>
+              <div id="wrap-inter-palivovy" class="flex items-center gap-2 pl-2">
+                <input type="number" id="inter-palivovy" value="36000" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white font-mono"> km
+              </div>
+            </div>
+
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -502,6 +538,37 @@
               <input type="number" id="form-cena" oninput="spocitatPodily()" required placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white font-mono focus:border-amber-400 focus:outline-none">
             </div>
           </div>
+
+          <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
+            <label class="block text-slate-300 font-medium mb-1">Účtování nákladů:</label>
+            <select id="form-ucetovani-typ" onchange="spocitatPodily()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white text-xs">
+              <option value="60_40">60 % Řidič / 40 % Firma (Standard)</option>
+              <option value="100_firma">100 % Firma (Jde plně do mých nákladů)</option>
+              <option value="100_ridic">100 % Řidič (Jde plně za řidičem)</option>
+            </select>
+            <div id="split-preview" class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800 hidden">
+              <div class="text-amber-400">Podíl řidiče: <span id="val-ridic" class="font-mono font-bold">0</span> Kč</div>
+              <div class="text-emerald-400">Firemní podíl: <span id="val-firma" class="font-mono font-bold">0</span> Kč</div>
+            </div>
+          </div>
+
+          <div id="box-zaplaceno" class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 hidden">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-slate-200">Podíl řidiče je již zaplacen</span>
+              <input type="checkbox" id="form-zaplaceno">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 mb-1">Poznámka / Detail úkonu</label>
+            <input type="text" id="form-poznamka" placeholder="Poznámka..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
+          </div>
+
+          <button type="submit" id="btn-ulozit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-lg flex items-center justify-center gap-2">
+            <i data-lucide="save" class="w-4 h-4"></i> Uložit servis do databáze
+          </button>
+        </form>
+      </div>
 
           <!-- VOLBA ROZDĚLENÍ NÁKLADŮ (3 MOŽNOSTI) -->
           <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
