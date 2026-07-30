@@ -1453,7 +1453,7 @@
       e.preventDefault();
       fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: "createRidic", jmeno: document.getElementById('ridic-jmeno').value, telefon: document.getElementById('ridic-tel'].value, pin: document.getElementById('ridic-pin').value })
+        body: JSON.stringify({ action: "createRidic", jmeno: document.getElementById('ridic-jmeno').value, telefon: document.getElementById('ridic-tel').value, pin: document.getElementById('ridic-pin').value })
       }).then(r => r.json()).then(res => { if (res.status === 'success') { zavritModalNovyRidic(); nactiData(); } });
     }
 
