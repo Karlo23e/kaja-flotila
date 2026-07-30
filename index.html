@@ -200,24 +200,28 @@
       
       <!-- PŘEHLED -->
       <div id="tab-prehled" class="space-y-4">
-        <!-- Nahrané dokumenty (ORV & POV) -->
+        <!-- Nahrané dokumenty (ORV Predni/Zadni & POV) -->
         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
             <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="file-text" class="w-4 h-4"></i> Dokumenty Vozidla (ORV & POV Zelená karta)
+              <i data-lucide="file-text" class="w-4 h-4"></i> Dokumenty Vozidla (ORV & Zelená karta)
             </h3>
             <button onclick="toggleFormularDokumenty()" class="text-xs text-amber-400 hover:underline flex items-center gap-1">
               <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Nahrát soubory
             </button>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
-              <span class="text-slate-400 block mb-1">Malý TP (ORV):</span>
-              <span id="view-maly-tp" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-center">
+              <span class="text-slate-400 block mb-1">Malý TP (Přední):</span>
+              <span id="view-maly-tp-predni" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
             </div>
-            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
-              <span class="text-slate-400 block mb-1">Zelená karta (POV):</span>
+            <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-center">
+              <span class="text-slate-400 block mb-1">Malý TP (Zadní):</span>
+              <span id="view-maly-tp-zadni" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
+            </div>
+            <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-center">
+              <span class="text-slate-400 block mb-1">Zelená karta:</span>
               <span id="view-pov" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
             </div>
           </div>
@@ -225,8 +229,12 @@
           <form id="form-dokumenty" onsubmit="ulozitDokumenty(event)" class="bg-slate-900 p-3.5 rounded-lg border border-amber-500/40 space-y-3 hidden mt-3">
             <div class="space-y-3 text-xs">
               <div>
-                <label class="block text-slate-400 mb-1">Fotka Malého TP (ORV)</label>
-                <input type="file" id="input-file-maly-tp" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
+                <label class="block text-slate-400 mb-1">Malý TP - Přední strana (Fotka)</label>
+                <input type="file" id="input-file-maly-tp-predni" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-1">Malý TP - Zadní strana (Fotka)</label>
+                <input type="file" id="input-file-maly-tp-zadni" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-600">
               </div>
               <div>
                 <label class="block text-slate-400 mb-1">Zelená karta (POV - PDF nebo Fotka)</label>
@@ -602,8 +610,9 @@
       document.getElementById('modal-spz').innerText = auto.rz;
       document.getElementById('form-auto-id').value = auto.id;
 
-      document.getElementById('view-maly-tp').innerHTML = auto.malyTpUrl ? `<a href="${auto.malyTpUrl}" target="_blank" class="underline text-amber-400">Zobrazit fotku TP</a>` : "Nenahráno";
-      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="underline text-amber-400">Zobrazit POV karta</a>` : "Nenahráno";
+      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<a href="${auto.malyTpPredniUrl}" target="_blank" class="underline text-amber-400">TP Přední</a>` : "Nenahráno";
+      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<a href="${auto.malyTpZadniUrl}" target="_blank" class="underline text-amber-400">TP Zadní</a>` : "Nenahráno";
+      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="underline text-amber-400">POV karta</a>` : "Nenahráno";
 
       const sel = document.getElementById('plan-partner-select');
       sel.innerHTML = '<option value="">-- Bez konkrétního servisu --</option>';
@@ -626,7 +635,8 @@
       btn.innerText = "Nahrávám soubory...";
 
       const autoId = document.getElementById('form-auto-id').value;
-      const fileMalyTp = document.getElementById('input-file-maly-tp').files[0];
+      const fileMalyTpPredni = document.getElementById('input-file-maly-tp-predni').files[0];
+      const fileMalyTpZadni = document.getElementById('input-file-maly-tp-zadni').files[0];
       const filePov = document.getElementById('input-file-pov').files[0];
 
       const toBase64 = file => new Promise((resolve, reject) => {
@@ -636,7 +646,8 @@
         reader.onerror = error => reject(error);
       });
 
-      let malyTpBase64 = fileMalyTp ? await toBase64(fileMalyTp) : null;
+      let malyTpPredniBase64 = fileMalyTpPredni ? await toBase64(fileMalyTpPredni) : null;
+      let malyTpZadniBase64 = fileMalyTpZadni ? await toBase64(fileMalyTpZadni) : null;
       let povBase64 = filePov ? await toBase64(filePov) : null;
 
       fetch(API_URL, {
@@ -644,7 +655,8 @@
         body: JSON.stringify({
           action: "updateDokumentyAuto",
           autoId: autoId,
-          malyTpBase64: malyTpBase64,
+          malyTpPredniBase64: malyTpPredniBase64,
+          malyTpZadniBase64: malyTpZadniBase64,
           povBase64: povBase64
         })
       }).then(r => r.json()).then(res => {
