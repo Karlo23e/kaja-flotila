@@ -652,6 +652,10 @@
           prepnoutSekci(aktivniSekce);
 
           if (cb) cb();
+        })
+        .catch(err => {
+          console.error("Chyba při načítání dat:", err);
+          document.getElementById('loader').innerHTML = '<p class="text-red-400">Chyba při načítání dat z databáze.</p>';
         });
     }
 
@@ -1016,6 +1020,7 @@
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
     function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
 
+    // OŠETŘENÁ A OPRAVENÁ FUNKCE PRO NAHRÁVÁNÍ DOKUMENTŮ S DEBUG VÝPISEM
     function ulozitDokumentyBase64(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save-dok');
@@ -1042,12 +1047,24 @@
             povBase64: b64Pov
           })
         });
-      }).then(r => r.json()).then(res => {
-        btn.disabled = false; btn.innerText = "Nahrát a uložit dokumenty";
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.disabled = false; 
+        btn.innerText = "Nahrát a uložit dokumenty";
         if (res.status === 'success') {
           toggleFormularDokumenty();
           nactiData(() => otevritDetail(autoId));
-        } else { alert("Chyba při nahrávání."); }
+        } else { 
+          console.error("Server vrátil chybu při uploadu:", res);
+          alert("Chyba při nahrávání: " + (res.message || 'Neznámá chyba')); 
+        }
+      })
+      .catch(err => {
+        btn.disabled = false; 
+        btn.innerText = "Nahrát a uložit dokumenty";
+        console.error("Klientská chyba v Promise/Fetch:", err);
+        alert("Kritická chyba při odesílání: " + err.toString());
       });
     }
 
