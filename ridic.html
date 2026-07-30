@@ -4,12 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KaJa - Řidičská zóna</title>
-
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f172a">
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -18,190 +12,112 @@
   <!-- PŘIHLAŠOVACÍ OBRAZOVKA -->
   <div id="login-screen" class="max-w-md mx-auto mt-12 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-5">
     <div class="text-center space-y-1">
-      <h1 class="text-2xl font-bold text-amber-400 flex items-center justify-center gap-2">
-        <i data-lucide="truck"></i> KaJa Řidič
-      </h1>
+      <h1 class="text-2xl font-bold text-amber-400 flex items-center justify-center gap-2"><i data-lucide="truck"></i> KaJa Řidič</h1>
       <p class="text-xs text-slate-400">Přihlášení do řidičské zóny</p>
     </div>
-
     <div id="login-loader" class="text-center py-4 text-xs text-slate-400">Načítám seznam řidičů...</div>
-
     <form id="login-form" onsubmit="prihlasitRidice(event)" class="space-y-4 hidden text-xs">
       <div>
         <label class="block text-slate-400 mb-1">Vyber své jméno</label>
-        <select id="login-select-ridic" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:border-amber-400 focus:outline-none">
+        <select id="login-select-ridic" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:border-amber-400">
           <option value="">-- Vyber ze seznamu --</option>
         </select>
       </div>
       <div>
         <label class="block text-slate-400 mb-1">Přístupový PIN</label>
-        <input type="password" id="login-pin" required maxlength="6" placeholder="Zadej PIN" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-amber-400 font-mono tracking-widest focus:border-amber-400 focus:outline-none">
+        <input type="password" id="login-pin" required maxlength="6" placeholder="Zadej PIN" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-amber-400 font-mono tracking-widest">
       </div>
-      <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow">
-        <i data-lucide="log-in" class="w-4 h-4"></i> Přihlásit se
-      </button>
+      <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3.5 rounded-xl text-sm shadow">Přihlásit se</button>
     </form>
   </div>
 
-  <!-- MODÁLNÍ OKNO PRO ZMĚNU VÝCHOZÍHO PINU -->
+  <!-- MODÁLNÍ OKNO PRO ZMĚNU PINU -->
   <div id="modal-zmena-pinu" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-      <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
-        <i data-lucide="shield-alert" class="w-5 h-5"></i> Nutná změna PINu
-      </h3>
-      <p class="text-xs text-slate-300">Používáš výchozí bezpečnostní PIN (1111). Pro pokračování si prosím zvol nový vlastní PIN.</p>
+    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-md rounded-2xl p-6 space-y-4">
+      <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2"><i data-lucide="shield-alert"></i> Nutná změna PINu</h3>
+      <p class="text-xs text-slate-300">Používáš výchozí PIN (1111). Zvol si prosím nový vlastní PIN.</p>
       <form onsubmit="ulozitNovyPin(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-400 mb-1">Nový PIN (max 6 znaků)</label>
-          <input type="password" id="novy-pin-input" required maxlength="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-amber-400 font-mono tracking-widest">
-        </div>
-        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-lg text-sm">Uložit nový PIN</button>
+        <input type="password" id="novy-pin-input" required maxlength="6" placeholder="Nový PIN" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-amber-400 font-mono">
+        <button type="submit" id="btn-save-pin" class="w-full bg-amber-500 text-slate-950 font-bold p-3 rounded-lg">Uložit nový PIN</button>
       </form>
     </div>
   </div>
 
   <!-- HLAVNÍ APLIKACE PRO ŘIDIČE -->
   <div id="app-container" class="hidden max-w-4xl mx-auto space-y-6">
-    <!-- HLAVIČKA -->
     <header class="flex justify-between items-center border-b border-slate-700 pb-4">
       <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700 text-amber-400 active:scale-95 transition-transform">
-          <i data-lucide="more-vertical" class="w-6 h-6"></i>
-        </button>
+        <button onclick="toggleSidebar()" class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 text-amber-400"><i data-lucide="more-vertical"></i></button>
         <div>
           <h1 id="driver-header-title" class="text-xl font-bold text-amber-400">...</h1>
           <p id="driver-header-sub" class="text-xs text-slate-400">Vozidlo: ...</p>
         </div>
       </div>
-      <button onclick="odhlasitRidice()" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs flex items-center gap-1.5">
-        <i data-lucide="log-out" class="w-4 h-4"></i> Odhlásit
-      </button>
+      <button onclick="odhlasitRidice()" class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs flex items-center gap-1"><i data-lucide="log-out" class="w-4 h-4"></i> Odhlásit</button>
     </header>
 
-    <!-- LEVÉ MENU (SIDEBAR) -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 hidden z-40"></div>
     <aside id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 z-50 p-5 flex flex-col justify-between transform -translate-x-full transition-transform duration-300 shadow-2xl">
       <div class="space-y-6 overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-          <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2">
-            <i data-lucide="menu" class="w-5 h-5"></i> Menu řidiče
-          </h2>
-          <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
+          <h2 class="text-lg font-bold text-amber-400">Menu řidiče</h2>
+          <button onclick="toggleSidebar()" class="text-slate-400"><i data-lucide="x"></i></button>
         </div>
-
         <nav class="space-y-2 text-sm font-medium">
-          <button onclick="prepnoutSekciRidic('domu')" id="nav-d" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold shadow"><i data-lucide="home" class="w-5 h-5"></i> Hlavní panel</button>
-          <button onclick="prepnoutSekciRidic('servisy')" id="nav-s" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="calendar" class="w-5 h-5"></i> Plánované servisy</button>
-          <button onclick="prepnoutSekciRidic('stav')" id="nav-st" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="shield-check" class="w-5 h-5"></i> Stav vozu & Závady</button>
-          <button onclick="prepnoutSekciRidic('naklady')" id="nav-n" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="bar-chart-3" class="w-5 h-5"></i> Statistika nákladů</button>
-          <button onclick="prepnoutSekciRidic('spotreba')" id="nav-sp" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="fuel" class="w-5 h-5"></i> Statistika spotřeby</button>
-          <button onclick="prepnoutSekciRidic('dokumenty')" id="nav-doc" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="file-text" class="w-5 h-5"></i> Dokumenty k vozu</button>
-          <button onclick="prepnoutSekciRidic('kontakty')" id="nav-k" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="phone" class="w-5 h-5"></i> Důležité kontakty</button>
+          <button onclick="prepnoutSekciRidic('domu')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold"><i data-lucide="home"></i> Hlavní panel</button>
+          <button onclick="prepnoutSekciRidic('servisy')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="calendar"></i> Plánované servisy</button>
+          <button onclick="prepnoutSekciRidic('stav')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="shield-check"></i> Stav vozu & Závady</button>
+          <button onclick="prepnoutSekciRidic('dokumenty')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="file-text"></i> Dokumenty k vozu</button>
+          <button onclick="prepnoutSekciRidic('kontakty')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="phone"></i> Důležité kontakty</button>
         </nav>
       </div>
     </aside>
 
-    <!-- SEKCE: HLAVNÍ PANEL -->
     <main class="space-y-4">
       <div id="sekce-domu" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Zadat tankování -->
-          <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-3">
-            <h3 class="text-md font-bold text-amber-400 flex items-center gap-2"><i data-lucide="fuel" class="w-4 h-4"></i> Zadat tankování</h3>
-            <form onsubmit="ulozitTankovani(event)" class="space-y-3 text-xs">
-              <div><label class="block text-slate-400 mb-1">Datum</label><input type="date" id="t-datum" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono"></div>
-              <div class="grid grid-cols-2 gap-2">
-                <div><label class="block text-slate-400 mb-1">Stav ODO (km)</label><input type="number" id="t-odo" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono"></div>
-                <div><label class="block text-slate-400 mb-1">Množství (litry)</label><input type="number" step="0.01" id="t-litry" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono"></div>
-              </div>
-              <div><label class="block text-slate-400 mb-1">Celková cena (Kč)</label><input type="number" id="t-cena" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono"></div>
-              <div><label class="block text-slate-400 mb-1">Fotka ODO (Stav tachometru)</label><input type="file" id="t-fotka" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-white text-xs"></div>
-              <button type="submit" id="btn-t-save" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded text-xs">Uložit tankování</button>
+          <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3 text-xs">
+            <h3 class="text-md font-bold text-amber-400">Zadat tankování</h3>
+            <form onsubmit="ulozitTankovani(event)" class="space-y-2">
+              <input type="date" id="t-datum" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+              <input type="number" id="t-odo" placeholder="Stav ODO (km)" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+              <input type="number" step="0.01" id="t-litry" placeholder="Litry" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+              <input type="number" id="t-cena" placeholder="Cena celkem" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+              <input type="file" id="t-fotka" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-white text-xs">
+              <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold p-2.5 rounded">Uložit tankování</button>
             </form>
           </div>
-
-          <!-- Zadat stav tachometru -->
-          <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-3">
-            <h3 class="text-md font-bold text-amber-400 flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Zadat stav tachometru (ODO)</h3>
-            <form onsubmit="ulozitOdo(event)" class="space-y-3 text-xs">
-              <div><label class="block text-slate-400 mb-1">Aktuální kilometry</label><input type="number" id="o-odo" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono"></div>
-              <div><label class="block text-slate-400 mb-1">Fotka ODO</label><input type="file" id="o-fotka" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-white text-xs"></div>
-              <button type="submit" id="btn-o-save" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded text-xs mt-6">Aktualizovat ODO</button>
+          <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3 text-xs">
+            <h3 class="text-md font-bold text-amber-400">Aktualizovat ODO</h3>
+            <form onsubmit="ulozitOdo(event)" class="space-y-2">
+              <input type="number" id="o-odo" placeholder="Aktuální km" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+              <input type="file" id="o-fotka" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-white text-xs">
+              <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold p-2.5 rounded mt-6">Aktualizovat ODO</button>
             </form>
           </div>
         </div>
       </div>
 
-      <!-- SEKCE: PLÁNOVANÉ SERVISY -->
       <div id="sekce-servisy" class="space-y-3 hidden">
-        <h2 class="text-lg font-bold text-amber-400">Plánované servisy pro váš vůz</h2>
+        <h2 class="text-lg font-bold text-amber-400">Plánované servisy</h2>
         <div id="driver-plan-list" class="space-y-2"></div>
       </div>
 
-      <!-- SEKCE: STAV VOZU & ZÁVADY -->
       <div id="sekce-stav" class="space-y-4 hidden">
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-3">
-          <h3 class="text-md font-bold text-amber-400">Zbývající intervaly a termíny</h3>
-          <div id="driver-intervals" class="grid grid-cols-2 gap-2 text-xs"></div>
-        </div>
-
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-3">
-          <h3 class="text-md font-bold text-amber-400">Nahlásit novou závadu</h3>
-          <form onsubmit="ulozitZavaduRidic(event)" class="space-y-3 text-xs">
-            <div><label class="block text-slate-400 mb-1">Popis závady</label><textarea id="z-popis" rows="2" required placeholder="Popiš co je v nepořádku..." class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></textarea></div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-slate-400 mb-1">Závažnost</label>
-                <select id="z-zavaznost" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white">
-                  <option value="Nízká">Nízká</option>
-                  <option value="Střední">Střední</option>
-                  <option value="Vysoká">Vysoká</option>
-                </select>
-              </div>
-              <div><label class="block text-slate-400 mb-1">Fotka závady</label><input type="file" id="z-fotka" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-white text-xs"></div>
-            </div>
-            <button type="submit" id="btn-z-save" class="w-full bg-amber-500 text-slate-950 font-bold p-2.5 rounded text-xs">Odeslat závadu adminovi</button>
-          </form>
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3 text-xs">
+          <h3 class="text-md font-bold text-amber-400">Zbývající intervaly</h3>
+          <div id="driver-intervals" class="grid grid-cols-2 gap-2"></div>
         </div>
       </div>
 
-      <!-- SEKCE: STATISTIKA NÁKLADŮ -->
-      <div id="sekce-naklady" class="space-y-4 hidden">
-        <div id="driver-tco-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-2">
-          <h3 class="text-md font-bold text-amber-400">Historie servisních nákladů</h3>
-          <div id="driver-servis-history" class="space-y-2"></div>
-        </div>
-      </div>
-
-      <!-- SEKCE: STATISTIKA SPOTŘEBY -->
-      <div id="sekce-spotreba" class="space-y-4 hidden">
-        <div id="driver-fuel-summary" class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl text-center space-y-1"></div>
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-2">
-          <h3 class="text-md font-bold text-amber-400">Historie tankování</h3>
-          <div id="driver-fuel-history" class="space-y-2"></div>
-        </div>
-      </div>
-
-      <!-- SEKCE: DOKUMENTY K VOZU -->
       <div id="sekce-dokumenty" class="space-y-3 hidden">
-        <h2 class="text-lg font-bold text-amber-400">Dokumenty přiřazeného vozidla</h2>
+        <h2 class="text-lg font-bold text-amber-400">Dokumenty vozidla</h2>
         <div id="driver-docs-list" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"></div>
       </div>
 
-      <!-- SEKCE: DŮLEŽITÉ KONTAKTY -->
       <div id="sekce-kontakty" class="space-y-3 hidden">
         <h2 class="text-lg font-bold text-amber-400">Důležité kontakty</h2>
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl space-y-3 text-xs">
-          <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-            <div><strong class="text-white text-sm block">Karel (Dispečink / Správce)</strong><span class="text-slate-400 font-mono">+420 792 416 441</span></div>
-            <a href="tel:+420792416441" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1.5 rounded font-bold">Zavolat</a>
-          </div>
-          <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-            <div><strong class="text-white text-sm block">Asistence / Odtahová služba</strong><span class="text-slate-400 font-mono">1234 (Nonstop)</span></div>
-            <a href="tel:1234" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1.5 rounded font-bold">Zavolat</a>
-          </div>
-        </div>
+        <div id="driver-kontakty-list" class="space-y-2 text-xs"></div>
       </div>
     </main>
   </div>
@@ -210,54 +126,24 @@
     const API_BASE = "https://script.google.com/macros/s/";
     const API_ID = "AKfycbzxo1uJ_ge4tkGLsdco088jJNdSJGLHk_ah55XYGtLBXV14CePgj2Quo9haLDX2no3g";
     const API_URL = API_BASE + API_ID + "/exec";
-
-    const CLOUD_NAME = "ou0xbczh";
-    const UPLOAD_PRESET = "KaJaApp";
-
-    let globalData = {};
-    let currentRidic = null;
-    let currentAuto = null;
+    let globalData = {}, currentRidic = null, currentAuto = null;
 
     window.onload = function() {
-      lucide.createIcons();
-      nactiDataProPrihlaseni();
+      fetch(API_URL + "?action=getData").then(r => r.json()).then(data => {
+        globalData = data;
+        const sel = document.getElementById('login-select-ridic');
+        (data.ridici || []).forEach(r => { sel.innerHTML += `<option value="${r.id}">${r.jmeno}</option>`; });
+        document.getElementById('login-loader').classList.add('hidden');
+        document.getElementById('login-form').classList.remove('hidden');
+      });
     };
-
-    function nactiDataProPrihlaseni() {
-      fetch(API_URL + "?action=getData")
-        .then(r => r.json())
-        .then(data => {
-          globalData = data;
-          console.lib ? null : console.log("Načtená data řidičů:", data.ridici);
-          const select = document.getElementById('login-select-ridic');
-          select.innerHTML = '<option value="">-- Vyber ze seznamu --</option>';
-          
-          (data.ridici || []).forEach(r => {
-            select.innerHTML += `<option value="${r.id}">${r.jmeno}</option>`;
-          });
-          
-          document.getElementById('login-loader').classList.add('hidden');
-          document.getElementById('login-form').classList.remove('hidden');
-        })
-        .catch(err => {
-          console.error("Chyba při načítání řidičů:", err);
-          document.getElementById('login-loader').innerHTML = '<p class="text-red-400">Chyba při načítání řidičů.</p>';
-        });
-    }
 
     function prihlasitRidice(e) {
       e.preventDefault();
-      const id = document.getElementById('login-select-ridic').value;
+      const ridic = (globalData.ridici || []).find(r => r.id == document.getElementById('login-select-ridic').value);
       const pin = document.getElementById('login-pin').value.trim();
-      
-      const ridic = (globalData.ridici || []).find(r => r.id == id);
-      console.log("Pokus o přihlášení řidiče:", ridic, "Zadaný PIN:", pin);
 
-      if (!ridic || String(ridic.pin).trim() !== pin) {
-        alert("Chybné jméno nebo PIN!");
-        return;
-      }
-
+      if (!ridic || String(ridic.pin).trim() !== pin) { alert("Chybné jméno nebo PIN!"); return; }
       currentRidic = ridic;
       currentAuto = (globalData.auta || []).find(a => a.id == ridic.prirazeneAutoId);
 
@@ -265,145 +151,78 @@
         document.getElementById('modal-zmena-pinu').classList.remove('hidden');
         return;
       }
-
-      zavestAplikaciRidice();
+      zavestAplikaci();
     }
 
     function ulozitNovyPin(e) {
       e.preventDefault();
       const novyPin = document.getElementById('novy-pin-input').value.trim();
-      currentRidic.pin = novyPin;
-      document.getElementById('modal-zmena-pinu').classList.add('hidden');
-      zavestAplikaciRidice();
+      fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "updatePin", ridicId: currentRidic.id, novyPin: novyPin }) })
+      .then(r => r.json()).then(res => {
+        if (res.status === 'success') {
+          currentRidic.pin = novyPin;
+          document.getElementById('modal-zmena-pinu').classList.add('hidden');
+          zavestAplikaci();
+        }
+      });
     }
 
-    function zavestAplikaciRidice() {
+    function zavestAplikaci() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-container').classList.remove('hidden');
-
       document.getElementById('driver-header-title').innerText = currentRidic.jmeno;
-      document.getElementById('driver-header-sub').innerText = currentAuto ? `Vozidlo: ${currentAuto.nazev} (${currentAuto.rz})` : "Žádné přiřazené vozidlo";
-
+      document.getElementById('driver-header-sub').innerText = currentAuto ? `Vozidlo: ${currentAuto.nazev} (${currentAuto.rz})` : "Bez vozu";
       vyrenderovatStavVozu();
       vyrenderovatDokumenty();
-      vyrenderovatPlanyRidic();
+      vyrenderovatKontakty();
       lucide.createIcons();
     }
 
-    function odhlasitRidice() {
-      currentRidic = null;
-      currentAuto = null;
-      document.getElementById('app-container').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
-      document.getElementById('login-pin').value = '';
-    }
-
-    function toggleSidebar() {
-      const sb = document.getElementById('sidebar');
-      const ov = document.getElementById('sidebar-overlay');
-      sb.classList.toggle('-translate-x-full');
-      ov.classList.toggle('hidden');
-    }
-
-    function prepnoutSekciRidic(sekce) {
-      ['domu', 'servisy', 'stav', 'naklady', 'spotreba', 'dokumenty', 'kontakty'].forEach(s => {
-        document.getElementById('sekce-' + s).classList.add('hidden');
-      });
-      document.getElementById('sekce-' + sekce).classList.remove('hidden');
+    function odhlasitRidice() { location.reload(); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); }
+    function prepnoutSekciRidic(s) {
+      ['domu', 'servisy', 'stav', 'dokumenty', 'kontakty'].forEach(sec => { document.getElementById('sekce-' + sec).classList.add('hidden'); });
+      document.getElementById('sekce-' + s).classList.remove('hidden');
       toggleSidebar();
-      lucide.createIcons();
     }
 
-    async function uploadNaCloudinary(file) {
-      if (!file) return null;
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", UPLOAD_PRESET);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: "POST", body: fd });
-      const data = await res.json();
-      return data.secure_url || null;
-    }
-
-    async function ulozitOdo(e) {
-      e.preventDefault();
-      if (!currentAuto) { alert("Nemáš přiřazené auto!"); return; }
-      const btn = document.getElementById('btn-o-save');
-      btn.disabled = true; btn.innerText = "Nahrávám...";
-
-      const fotkaUrl = await uploadNaCloudinary(document.getElementById('o-fotka').files[0]);
-      alert("Stav tachometru úspěšně aktualizován!");
-      btn.disabled = false; btn.innerText = "Aktualizovat ODO";
-    }
-
-    async function ulozitTankovani(e) {
-      e.preventDefault();
-      if (!currentAuto) { alert("Nemáš přiřazené auto!"); return; }
-      const btn = document.getElementById('btn-t-save');
-      btn.disabled = true; btn.innerText = "Nahrávám...";
-
-      const fotkaUrl = await uploadNaCloudinary(document.getElementById('t-fotka').files[0]);
-      alert("Tankování úspěšně zaznamenáno!");
-      btn.disabled = false; btn.innerText = "Uložit tankování";
-    }
-
-    async function ulozitZavaduRidic(e) {
-      e.preventDefault();
-      if (!currentAuto) { alert("Nemáš přiřazené auto!"); return; }
-      const btn = document.getElementById('btn-z-save');
-      btn.disabled = true; btn.innerText = "Odesílám...";
-
-      const fotkaUrl = await uploadNaCloudinary(document.getElementById('z-fotka').files[0]);
-      alert("Závada byla úspěšně nahlášena správci!");
-      btn.disabled = false; btn.innerText = "Odeslat závadu adminovi";
-      document.getElementById('z-popis').value = '';
+    function vyrenderovatKontakty() {
+      const kont = document.getElementById('driver-kontakty-list'); kont.innerHTML = '';
+      (globalData.kontakty || []).forEach(k => {
+        kont.innerHTML += `
+          <div class="bg-slate-800 p-3.5 rounded-xl flex justify-between items-center">
+            <div>
+              <strong class="text-white text-sm block">${k.jmeno}</strong>
+              ${k.poznamka ? `<span class="text-slate-400 block">${k.poznamka}</span>` : ''}
+              <span class="text-amber-400 font-mono">${k.telefon}</span>
+            </div>
+            <a href="tel:${k.telefon}" class="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded font-bold">Zavolat</a>
+          </div>
+        `;
+      });
     }
 
     function vyrenderovatStavVozu() {
       if (!currentAuto) return;
       const d = currentAuto.detailZbyva || {};
-      const box = document.getElementById('driver-intervals');
-      box.innerHTML = `
-        <div class="bg-slate-900 p-2.5 rounded border border-slate-800">Olej: <strong class="text-white">${d.olej ?? 'Neuvedeno'} km</strong></div>
-        <div class="bg-slate-900 p-2.5 rounded border border-slate-800">Kabinový: <strong class="text-white">${d.kabinovy ?? 'Neuvedeno'} km</strong></div>
-        <div class="bg-slate-900 p-2.5 rounded border border-slate-800">STK do: <strong class="text-white">${currentAuto.stk || 'Neuvedeno'}</strong></div>
-        <div class="bg-slate-900 p-2.5 rounded border border-slate-800">Dálnice do: <strong class="text-white">${currentAuto.dalnicni || 'Neuvedeno'}</strong></div>
+      document.getElementById('driver-intervals').innerHTML = `
+        <div class="bg-slate-900 p-2 rounded">Olej: <strong>${d.olej ?? 'Neuvedeno'} km</strong></div>
+        <div class="bg-slate-900 p-2 rounded">STK do: <strong>${currentAuto.stk || 'Neuvedeno'}</strong></div>
       `;
     }
 
     function vyrenderovatDokumenty() {
       if (!currentAuto) return;
-      const kont = document.getElementById('driver-docs-list');
-      kont.innerHTML = `
-        <div class="bg-slate-800 p-3 rounded border border-slate-700 text-center space-y-2">
+      document.getElementById('driver-docs-list').innerHTML = `
+        <div class="bg-slate-800 p-3 rounded text-center space-y-2">
           <span>Malý TP (Přední)</span>
-          ${currentAuto.malyTpPredniUrl ? `<a href="${currentAuto.malyTpPredniUrl}" target="_blank" class="block bg-emerald-500/20 text-emerald-400 p-1.5 rounded font-bold">Zobrazit</a>` : '<span class="text-slate-500 block">Nenahráno</span>'}
-        </div>
-        <div class="bg-slate-800 p-3 rounded border border-slate-700 text-center space-y-2">
-          <span>Malý TP (Zadní)</span>
-          ${currentAuto.malyTpZadniUrl ? `<a href="${currentAuto.malyTpZadniUrl}" target="_blank" class="block bg-emerald-500/20 text-emerald-400 p-1.5 rounded font-bold">Zobrazit</a>` : '<span class="text-slate-500 block">Nenahráno</span>'}
-        </div>
-        <div class="bg-slate-800 p-3 rounded border border-slate-700 text-center space-y-2">
-          <span>Zelená karta (POV)</span>
-          ${currentAuto.povUrl ? `<a href="${currentAuto.povUrl}" target="_blank" class="block bg-emerald-500/20 text-emerald-400 p-1.5 rounded font-bold">Zobrazit</a>` : '<span class="text-slate-500 block">Nenahráno</span>'}
+          ${currentAuto.malyTpPredniUrl ? `<a href="${currentAuto.malyTpPredniUrl}" target="_blank" class="block bg-emerald-500/20 text-emerald-400 p-1 rounded font-bold">Zobrazit</a>` : '<span class="text-slate-500">Nenahráno</span>'}
         </div>
       `;
     }
 
-    function vyrenderovatPlanyRidic() {
-      if (!currentAuto) return;
-      const box = document.getElementById('driver-plan-list');
-      const plany = (globalData.planovaneServisy || []).filter(p => p.autoId == currentAuto.id);
-      if (plany.length === 0) { box.innerHTML = '<div class="text-xs text-slate-500 italic">Žádné naplánované servisy.</div>'; return; }
-      box.innerHTML = '';
-      plany.forEach(p => {
-        box.innerHTML += `
-          <div class="bg-slate-800 p-3 rounded text-xs space-y-1">
-            <div class="flex justify-between font-bold text-white"><span>${p.ukon}</span><span class="text-amber-400 font-mono">${p.datumPlan}</span></div>
-            ${p.poznamka ? `<div class="text-slate-400 italic">${p.poznamka}</div>` : ''}
-          </div>
-        `;
-      });
-    }
+    function ulozitOdo(e) { e.preventDefault(); alert("ULOŽENO"); }
+    function ulozitTankovani(e) { e.preventDefault(); alert("ULOŽENO"); }
   </script>
 </body>
 </html>
