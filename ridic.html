@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KaJa - Řidičská zóna</title>
+
+  <!-- PWA & Mobile Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KaJa Řidič">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/?size=512&id=49429&format=png&color=000000">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/?size=512&id=49429&format=png&color=000000">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -12,7 +22,9 @@
   <!-- PŘIHLAŠOVACÍ OBRAZOVKA -->
   <div id="login-screen" class="max-w-md mx-auto mt-12 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-5">
     <div class="text-center space-y-1">
-      <h1 class="text-2xl font-bold text-amber-400 flex items-center justify-center gap-2"><i data-lucide="truck"></i> KaJa Řidič</h1>
+      <h1 class="text-2xl font-bold text-amber-400 flex items-center justify-center gap-2">
+        <i data-lucide="truck"></i> KaJa Řidič
+      </h1>
       <p class="text-xs text-slate-400">Přihlášení do řidičské zóny</p>
     </div>
     <div id="login-loader" class="text-center py-4 text-xs text-slate-400">Načítám seznam řidičů...</div>
@@ -133,6 +145,19 @@
         globalData = data;
         const sel = document.getElementById('login-select-ridic');
         (data.ridici || []).forEach(r => { sel.innerHTML += `<option value="${r.id}">${r.jmeno}</option>`; });
+        
+        // Kontrola trvalého přihlášení
+        const savedRidicId = localStorage.getItem('kaja_ridic_id');
+        if (savedRidicId) {
+          const ridic = (data.ridici || []).find(r => r.id == savedRidicId);
+          if (ridic) {
+            currentRidic = ridic;
+            currentAuto = (data.auta || []).find(a => a.id == ridic.prirazeneAutoId);
+            zavestAplikaci();
+            return;
+          }
+        }
+
         document.getElementById('login-loader').classList.add('hidden');
         document.getElementById('login-form').classList.remove('hidden');
       });
@@ -151,6 +176,8 @@
         document.getElementById('modal-zmena-pinu').classList.remove('hidden');
         return;
       }
+      
+      localStorage.setItem('kaja_ridic_id', currentRidic.id);
       zavestAplikaci();
     }
 
@@ -162,6 +189,7 @@
         if (res.status === 'success') {
           currentRidic.pin = novyPin;
           document.getElementById('modal-zmena-pinu').classList.add('hidden');
+          localStorage.setItem('kaja_ridic_id', currentRidic.id);
           zavestAplikaci();
         }
       });
@@ -175,10 +203,15 @@
       vyrenderovatStavVozu();
       vyrenderovatDokumenty();
       vyrenderovatKontakty();
+      vyrenderovatPlanyRidic();
       lucide.createIcons();
     }
 
-    function odhlasitRidice() { location.reload(); }
+    function odhlasitRidice() {
+      localStorage.removeItem('kaja_ridic_id');
+      location.reload();
+    }
+
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); }
     function prepnoutSekciRidic(s) {
       ['domu', 'servisy', 'stav', 'dokumenty', 'kontakty'].forEach(sec => { document.getElementById('sekce-' + sec).classList.add('hidden'); });
@@ -219,6 +252,22 @@
           ${currentAuto.malyTpPredniUrl ? `<a href="${currentAuto.malyTpPredniUrl}" target="_blank" class="block bg-emerald-500/20 text-emerald-400 p-1 rounded font-bold">Zobrazit</a>` : '<span class="text-slate-500">Nenahráno</span>'}
         </div>
       `;
+    }
+
+    function vyrenderovatPlanyRidic() {
+      if (!currentAuto) return;
+      const box = document.getElementById('driver-plan-list');
+      const plany = (globalData.planovaneServisy || []).filter(p => p.autoId == currentAuto.id);
+      if (plany.length === 0) { box.innerHTML = '<div class="text-xs text-slate-500 italic">Žádné naplánované servisy.</div>'; return; }
+      box.innerHTML = '';
+      plany.forEach(p => {
+        box.innerHTML += `
+          <div class="bg-slate-800 p-3 rounded text-xs space-y-1">
+            <div class="flex justify-between font-bold text-white"><span>${p.ukon}</span><span class="text-amber-400 font-mono">${p.datumPlan}</span></div>
+            ${p.poznamka ? `<div class="text-slate-400 italic">${p.poznamka}</div>` : ''}
+          </div>
+        `;
+      });
     }
 
     function ulozitOdo(e) { e.preventDefault(); alert("ULOŽENO"); }
