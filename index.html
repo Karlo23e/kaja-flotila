@@ -340,15 +340,15 @@
           <div class="grid grid-cols-3 gap-2 text-xs">
             <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-center">
               <span class="text-slate-400 block mb-1">Malý TP (Přední):</span>
-              <span id="view-maly-tp-predni" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
+              <div id="view-maly-tp-predni" class="space-y-1">Nenahráno</div>
             </div>
             <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-center">
               <span class="text-slate-400 block mb-1">Malý TP (Zadní):</span>
-              <span id="view-maly-tp-zadni" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
+              <div id="view-maly-tp-zadni" class="space-y-1">Nenahráno</div>
             </div>
             <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-center">
               <span class="text-slate-400 block mb-1">Zelená karta:</span>
-              <span id="view-pov" class="text-amber-400 font-mono font-bold truncate block">Nenahráno</span>
+              <div id="view-pov" class="space-y-1">Nenahráno</div>
             </div>
           </div>
 
@@ -654,28 +654,32 @@
     </div>
   </main>
 
-  <!-- MODÁLNÍ OKNO PRO NÁHLED DOKUMENTU UVNITŘ APLIKACE -->
+  <!-- MODÁLNÍ OKNO PRO NÁHLED DOKUMENTU UVNITŘ APLIKACE S MOŽNOSTÍ STAŽENÍ -->
   <div id="modal-preview" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col items-center justify-center hidden p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-2xl p-4 shadow-2xl flex flex-col max-h-[90vh]">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3 shrink-0">
         <h3 id="preview-title" class="text-md font-bold text-amber-400">Náhled dokumentu</h3>
-        <button onclick="zavritPreview()" class="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
+        <div class="flex items-center gap-2">
+          <a id="preview-download-btn" href="#" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Stáhnout / Otevřít
+          </a>
+          <button onclick="zavritPreview()" class="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
       </div>
       <div id="preview-content" class="flex-1 overflow-auto flex items-center justify-center p-2 bg-slate-950 rounded-xl">
-        <!-- Sem se dynamicky vloží obrázek nebo iframe pro PDF -->
+        <!-- Sem se dynamicky vloží obrázek nebo rámec pro PDF -->
       </div>
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIKA S DEBUG VÝPISY -->
+  <!-- JAVASCRIPT LOGIKA -->
   <script>
     const API_BASE = "https://script.google.com/macros/s/";
     const API_ID = "AKfycbzxo1uJ_ge4tkGLsdco088jJNdSJGLHk_ah55XYGtLBXV14CePgj2Quo9haLDX2no3g";
     const API_URL = API_BASE + API_ID + "/exec";
 
-    // Cloudinary údaje
     const CLOUD_NAME = "ou0xbczh";
     const UPLOAD_PRESET = "KaJaApp";
 
@@ -714,22 +718,17 @@
 
     function nactiData(cb) {
       document.getElementById('loader').classList.remove('hidden');
-      console.log("DEBUG: Zahajuji načítání dat z:", API_URL);
 
       fetch(API_URL + "?action=getData")
         .then(response => {
-          if (!response.ok) {
-            throw new Error("HTTP chyba při načítání: " + response.status + " " + response.statusText);
-          }
+          if (!response.ok) throw new Error("HTTP chyba: " + response.status);
           return response.text();
         })
         .then(textData => {
-          console.log("DEBUG: Surová odpověď ze serveru:", textData.substring(0, 150) + "...");
           try {
             const data = JSON.parse(textData);
-            if (data.status === "error") {
-              throw new Error("Server hlásí chybu: " + data.message);
-            }
+            if (data.status === "error") throw new Error(data.message);
+            
             seznamAut = data.auta || [];
             seznamRidicu = data.ridici || [];
             seznamPartneru = data.partneri || [];
@@ -750,14 +749,12 @@
             prepnoutSekci(aktivniSekce);
             if (cb) cb();
           } catch (jsonErr) {
-            console.error("DEBUG: Chyba parsování JSON odpovědi:", jsonErr, textData);
-            alert("Chyba: Server vrátil neplatná data (místo JSONu přišel HTML kód nebo chybová stránka). Zkontroluj konzoli (F12).");
-            document.getElementById('loader').innerHTML = '<p class="text-red-400">Chyba: Server vrátil neplatná data. Viz konzole.</p>';
+            console.error("Chyba parsování JSON:", jsonErr, textData);
+            alert("Chyba: Server vrátil neplatná data. Viz konzole.");
           }
         })
         .catch(err => {
-          console.error("DEBUG: Síťová nebo serverová chyba při nenačítání dat:", err);
-          alert("Chyba připojení k databázi: " + err.message);
+          console.error("Chyba při načítání dat:", err);
           document.getElementById('loader').innerHTML = '<p class="text-red-400">Chyba při načítání dat z databáze: ' + err.message + '</p>';
         });
     }
@@ -768,25 +765,17 @@
         const el = document.getElementById('sekce-' + s);
         const btn = document.getElementById('nav-btn-' + s);
         if (el) el.classList.add('hidden');
-        if (btn) {
-          btn.className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition-all";
-        }
+        if (btn) btn.className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition-all";
       });
 
       const activeEl = document.getElementById('sekce-' + sekce);
       const activeBtn = document.getElementById('nav-btn-' + sekce);
       if (activeEl) activeEl.classList.remove('hidden');
-      if (activeBtn) {
-        activeBtn.className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold transition-all shadow";
-      }
+      if (activeBtn) activeBtn.className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold transition-all shadow";
 
       const titles = {
-        'auta': 'Flotila vozidel',
-        'ridici': 'Správa řidičů',
-        'partneri': 'Partnerské servisy',
-        'global-plan': 'Plánování servisů',
-        'global-zavady': 'Nahlášené závady',
-        'global-tco': 'Globální TCO & Náklady'
+        'auta': 'Flotila vozidel', 'ridici': 'Správa řidičů', 'partneri': 'Partnerské servisy',
+        'global-plan': 'Plánování servisů', 'global-zavady': 'Nahlášené závady', 'global-tco': 'Globální TCO & Náklady'
       };
       document.getElementById('header-title').innerHTML = `<i data-lucide="${sekce === 'auta' ? 'truck' : sekce === 'ridici' ? 'users' : 'bar-chart-3'}"></i> KaJa Admin`;
       document.getElementById('header-subtitle').innerText = titles[sekce] || '';
@@ -941,7 +930,11 @@
               </span>
             </div>
             <p class="text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">${z.popis}</p>
-            ${z.fotkaUrl ? `<button onclick="zobrazitPreview('${z.fotkaUrl}', 'Fotka závady')" class="inline-block text-amber-400 hover:underline">Zobrazit fotku závady</button>` : ''}
+            ${z.fotkaUrl ? `
+              <div class="flex gap-2 pt-1">
+                <button onclick="zobrazitPreview('${z.fotkaUrl}', 'Fotka závady')" class="px-2.5 py-1 rounded bg-slate-800 text-amber-400 border border-slate-700 font-bold hover:bg-slate-700">Zobrazit</button>
+                <a href="${z.fotkaUrl}" target="_blank" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 font-bold hover:bg-slate-700 flex items-center gap-1">Stáhnout <i data-lucide="external-link" class="w-3 h-3"></i></a>
+              </div>` : ''}
             <div class="flex justify-end gap-2 pt-2 border-t border-slate-700/50">
               ${isNova ? `<button onclick="vyresitZavadu('${z.id}')" class="px-3 py-1.5 rounded bg-emerald-500 text-slate-950 font-bold">Označit jako vyřešeno</button>` : ''}
               <button onclick="prevedZavaduNaServis('${z.autoId}', '${z.popis.replace(/'/g, "")}')" class="px-3 py-1.5 rounded bg-amber-500 text-slate-950 font-bold flex items-center gap-1">
@@ -1083,9 +1076,20 @@
       formatKmBox('val-km-vzduchovy', d.vzduchovy);
       formatKmBox('val-km-palivovy', d.palivovy);
 
-      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<button onclick="zobrazitPreview('${auto.malyTpPredniUrl}', 'Malý TP - Přední')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>` : '<span class="text-slate-500">Nenahráno</span>';
-      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<button onclick="zobrazitPreview('${auto.malyTpZadniUrl}', 'Malý TP - Zadní')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>` : '<span class="text-slate-500">Nenahráno</span>';
-      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<button onclick="zobrazitPreview('${auto.povUrl}', 'Zelená karta (POV)')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>` : '<span class="text-slate-500">Nenahráno</span>';
+      // Pomocná funkce pro vygenerování tlačítek Zobrazit / Stáhnout
+      const vygenerujTlacitkaDokumentu = (url, nazev) => {
+        if (!url) return '<span class="text-slate-500">Nenahráno</span>';
+        return `
+          <div class="flex flex-col gap-1 items-center">
+            <button onclick="zobrazitPreview('${url}', '${nazev}')" class="w-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>
+            <a href="${url}" target="_blank" class="w-full bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded font-bold hover:bg-slate-700 flex items-center justify-center gap-1">Stáhnout <i data-lucide="external-link" class="w-3 h-3"></i></a>
+          </div>
+        `;
+      };
+
+      document.getElementById('view-maly-tp-predni').innerHTML = vygenerujTlacitkaDokumentu(auto.malyTpPredniUrl, "Malý TP - Přední");
+      document.getElementById('view-maly-tp-zadni').innerHTML = vygenerujTlacitkaDokumentu(auto.malyTpZadniUrl, "Malý TP - Zadní");
+      document.getElementById('view-pov').innerHTML = vygenerujTlacitkaDokumentu(auto.povUrl, "Zelená karta (POV)");
 
       const selPart = document.getElementById('modal-plan-partner');
       if (selPart) {
@@ -1100,19 +1104,30 @@
       nacistPlanovaneServisyProAuto(auto.id);
       nacistHistoriiServisu(auto.id);
       vyrenderovatTCOProAuto(auto.id);
+      lucide.createIcons();
     }
 
-    // FUNKCE PRO ZOBRAZENÍ DOKUMENTU PŘÍMO V APLIKACI
+    // UNIVERZÁLNÍ FUNKCE PRO ZOBRAZENÍ V NÁHLEDU
     function zobrazitPreview(url, nazev) {
       document.getElementById('preview-title').innerText = nazev;
+      document.getElementById('preview-download-btn').href = url;
       const content = document.getElementById('preview-content');
       
-      if (url.toLowerCase().endsWith('.pdf') || url.includes('/raw/upload/') || url.includes('.pdf?')) {
-        content.innerHTML = `<iframe src="${url}" class="w-full h-[70vh] rounded-lg border border-slate-700 bg-white"></iframe>`;
+      const isPdf = url.toLowerCase().includes('.pdf') || url.includes('/raw/upload/');
+      if (isPdf) {
+        content.innerHTML = `
+          <div class="text-center space-y-3 p-4">
+            <p class="text-xs text-slate-400">PDF dokumenty je nejlepší otevřít přímo v prohlížeči pro plné zobrazení.</p>
+            <a href="${url}" target="_blank" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-bold shadow">
+              <i data-lucide="external-link" class="w-4 h-4"></i> Otevřít PDF v novém panelu
+            </a>
+          </div>
+        `;
       } else {
         content.innerHTML = `<img src="${url}" alt="${nazev}" class="max-w-full max-h-[70vh] object-contain rounded-lg">`;
       }
       document.getElementById('modal-preview').classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function zavritPreview() {
@@ -1141,11 +1156,8 @@
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
     function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
 
-    // PŘÍMÉ NAHRÁVÁNÍ SOUBORŮ PŘES CLOUDINARY API S DEBUG VÝPISY
     async function uploadNaCloudinary(file) {
       if (!file) return null;
-      console.log("DEBUG CLOUDINARY: Zahajuji upload souboru:", file.name, "Velikost:", file.size);
-      
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
@@ -1156,18 +1168,13 @@
           body: formData
         });
         const data = await response.json();
-        console.log("DEBUG CLOUDINARY: Odpověď serveru:", data);
-
         if (data.secure_url) {
-          console.log("DEBUG CLOUDINARY: Úspěšně nahráno na URL:", data.secure_url);
           return data.secure_url;
         } else {
-          console.error("DEBUG CLOUDINARY: Server vrátil chybu:", data);
           alert("Chyba Cloudinary: " + (data.error && data.error.message ? data.error.message : JSON.stringify(data)));
           return null;
         }
       } catch (err) {
-        console.error("DEBUG CLOUDINARY: Síťová výjimka při uploadu:", err);
         alert("Síťová chyba při nahrávání na Cloudinary: " + err.toString());
         return null;
       }
@@ -1194,16 +1201,12 @@
         if (url2) payload.malyTpZadniUrl = url2;
         if (url3) payload.povUrl = url3;
 
-        console.log("DEBUG: Odesílám URL dokumentů do Apps Scriptu:", payload);
-
         const response = await fetch(API_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        const resText = await response.text();
-        console.log("DEBUG: Odpověď Apps Scriptu na dokumenty:", resText);
+        const res = await response.json();
 
-        const res = JSON.parse(resText);
         btn.disabled = false;
         btn.innerText = "Nahrát přes Cloudinary";
 
@@ -1216,7 +1219,6 @@
       } catch (err) {
         btn.disabled = false;
         btn.innerText = "Nahrát přes Cloudinary";
-        console.error("DEBUG: Chyba v ulozitDokumentyCloudinary:", err);
         alert("Chyba při komunikaci: " + err.toString());
       }
     }
@@ -1509,7 +1511,6 @@
       const typ = document.getElementById('form-ucetovani-typ').value;
       const vybranyUkon = document.getElementById('form-ukon').value;
 
-      // Sestavení detailního popisu pro brzdy
       let finalniUkon = vybranyUkon;
       if (vybranyUkon === "Brzdy") {
         let casti = [];
@@ -1560,15 +1561,12 @@
         intervalPalivovy: parseFloat(document.getElementById('inter-palivovy')?.value) || 36000
       };
 
-      console.log("DEBUG: Odesílám nový servis:", payload);
-
       fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify(payload)
       })
       .then(r => r.json())
       .then(res => {
-        console.log("DEBUG: Odpověď serveru na servis:", res);
         if (res.status === 'success') {
           document.getElementById('form-servis').reset();
           nactiData(() => { otevritDetail(autoId); prepnutTab('historie'); });
@@ -1577,7 +1575,6 @@
         }
       })
       .catch(err => {
-        console.error("DEBUG: Chyba při odesílání servisu:", err);
         alert("Síťová chyba při ukládání servisu: " + err.toString());
       });
     }
