@@ -43,11 +43,11 @@
         <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
       </div>
       <nav class="space-y-2 text-sm font-medium">
-        <button onclick="prepnoutSekci('auta')" id="nav-btn-auta" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold"><i data-lucide="truck" class="w-5 h-5"></i> Flotila vozidel</button>
-        <button onclick="prepnoutSekci('ridici')" id="nav-btn-ridici" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="users" class="w-5 h-5"></i> Správa řidičů</button>
-        <button onclick="prepnoutSekci('partneri')" id="nav-btn-partneri" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="map-pin" class="w-5 h-5"></i> Partnerské servisy</button>
-        <button onclick="prepnoutSekci('kontakty-admin')" id="nav-btn-kontakty-admin" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="phone" class="w-5 h-5"></i> Důležité kontakty</button>
-        <button onclick="prepnoutSekci('global-zavady')" id="nav-btn-global-zavady" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="alert-triangle" class="w-5 h-5"></i> Nahlášené závady</button>
+        <button onclick="zvolitSekci('auta')" id="nav-btn-auta" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold"><i data-lucide="truck" class="w-5 h-5"></i> Flotila vozidel</button>
+        <button onclick="zvolitSekci('ridici')" id="nav-btn-ridici" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="users" class="w-5 h-5"></i> Správa řidičů</button>
+        <button onclick="zvolitSekci('partneri')" id="nav-btn-partneri" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="map-pin" class="w-5 h-5"></i> Partnerské servisy</button>
+        <button onclick="zvolitSekci('kontakty-admin')" id="nav-btn-kontakty-admin" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="phone" class="w-5 h-5"></i> Důležité kontakty</button>
+        <button onclick="zvolitSekci('global-zavady')" id="nav-btn-global-zavady" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-slate-800"><i data-lucide="alert-triangle" class="w-5 h-5"></i> Nahlášené závady</button>
       </nav>
     </div>
   </aside>
@@ -150,7 +150,12 @@
         const el = document.getElementById('sekce-' + sec);
         if (el) el.classList.add('hidden');
       });
-      document.getElementById('sekce-' + s).classList.remove('hidden');
+      const cilovaSekce = document.getElementById('sekce-' + s);
+      if (cilovaSekce) cilovaSekce.classList.remove('hidden');
+    }
+
+    function zvolitSekci(s) {
+      prepnoutSekci(s);
       toggleSidebar();
     }
 
