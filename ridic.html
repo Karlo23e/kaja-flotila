@@ -49,7 +49,7 @@
       <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
         <i data-lucide="shield-alert" class="w-5 h-5"></i> Nutná změna PINu
       </h3>
-      <p class="text-xs text-slate-300">Používáš výchozí bezpečnostní PIN. Pro pokračování si prosím zvol nový vlastní PIN.</p>
+      <p class="text-xs text-slate-300">Používáš výchozí bezpečnostní PIN (1111). Pro pokračování si prosím zvol nový vlastní PIN.</p>
       <form onsubmit="ulozitNovyPin(event)" class="space-y-3 text-xs">
         <div>
           <label class="block text-slate-400 mb-1">Nový PIN (max 6 znaků)</label>
@@ -228,15 +228,19 @@
         .then(r => r.json())
         .then(data => {
           globalData = data;
+          console.lib ? null : console.log("Načtená data řidičů:", data.ridici);
           const select = document.getElementById('login-select-ridic');
           select.innerHTML = '<option value="">-- Vyber ze seznamu --</option>';
+          
           (data.ridici || []).forEach(r => {
             select.innerHTML += `<option value="${r.id}">${r.jmeno}</option>`;
           });
+          
           document.getElementById('login-loader').classList.add('hidden');
           document.getElementById('login-form').classList.remove('hidden');
         })
         .catch(err => {
+          console.error("Chyba při načítání řidičů:", err);
           document.getElementById('login-loader').innerHTML = '<p class="text-red-400">Chyba při načítání řidičů.</p>';
         });
     }
@@ -244,10 +248,12 @@
     function prihlasitRidice(e) {
       e.preventDefault();
       const id = document.getElementById('login-select-ridic').value;
-      const pin = document.getElementById('login-pin').value;
+      const pin = document.getElementById('login-pin').value.trim();
+      
       const ridic = (globalData.ridici || []).find(r => r.id == id);
+      console.log("Pokus o přihlášení řidiče:", ridic, "Zadaný PIN:", pin);
 
-      if (!ridic || ridic.pin !== pin) {
+      if (!ridic || String(ridic.pin).trim() !== pin) {
         alert("Chybné jméno nebo PIN!");
         return;
       }
@@ -255,7 +261,7 @@
       currentRidic = ridic;
       currentAuto = (globalData.auta || []).find(a => a.id == ridic.prirazeneAutoId);
 
-      if (ridic.pin === "1111") {
+      if (String(ridic.pin).trim() === "1111") {
         document.getElementById('modal-zmena-pinu').classList.remove('hidden');
         return;
       }
@@ -265,8 +271,7 @@
 
     function ulozitNovyPin(e) {
       e.preventDefault();
-      const novyPin = document.getElementById('novy-pin-input').value;
-      // Zde by proběhl zápis do tabulky, prozatím uložíme v paměti a pustíme dál
+      const novyPin = document.getElementById('novy-pin-input').value.trim();
       currentRidic.pin = novyPin;
       document.getElementById('modal-zmena-pinu').classList.add('hidden');
       zavestAplikaciRidice();
@@ -326,7 +331,6 @@
       btn.disabled = true; btn.innerText = "Nahrávám...";
 
       const fotkaUrl = await uploadNaCloudinary(document.getElementById('o-fotka').files[0]);
-      // Zde proběhne odeslání do Apps Scriptu
       alert("Stav tachometru úspěšně aktualizován!");
       btn.disabled = false; btn.innerText = "Aktualizovat ODO";
     }
