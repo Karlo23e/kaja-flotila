@@ -82,10 +82,9 @@
     </div>
   </main>
 
-  <!-- Modální okna pro admin s doplněnými křížky na zavření -->
+  <!-- Modální okna pro admin -->
   <div id="modal-nove-auto" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-5 space-y-4 relative">
-      <button type="button" onclick="zavritModalNoveAuto()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-5 space-y-4">
       <h3 class="text-lg font-bold text-amber-400">Přidat nové auto</h3>
       <form onsubmit="ulozitNoveAuto(event)" class="space-y-3 text-xs">
         <input type="text" id="auto-nazev" placeholder="Název" required class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white">
@@ -97,8 +96,7 @@
   </div>
 
   <div id="modal-novy-ridic" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-5 space-y-4 relative">
-      <button type="button" onclick="zavritModalNovyRidic()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-5 space-y-4">
       <h3 class="text-lg font-bold text-amber-400">Přidat řidiče</h3>
       <form onsubmit="ulozitNovehoRidice(event)" class="space-y-3 text-xs">
         <input type="text" id="ridic-jmeno" placeholder="Jméno a příjmení" required class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white">
@@ -142,9 +140,7 @@
         if (el) el.classList.add('hidden');
       });
       const cilovaSekce = document.getElementById('sekce-' + s);
-      if (cilovaSekce) {
-        cilovaSekce.classList.remove('hidden');
-      }
+      if (cilovaSekce) cilovaSekce.classList.remove('hidden');
     }
 
     function zvolitSekci(s) {
@@ -157,7 +153,6 @@
       document.getElementById('sidebar-overlay').classList.toggle('hidden');
     }
 
-    // Doplněné chybějící funkce pro otevírání a zavírání oken
     function otevritModalNoveAuto() {
       document.getElementById('modal-nove-auto').classList.remove('hidden');
     }
@@ -217,12 +212,7 @@
           telefon: document.getElementById('k-tel').value,
           poznamka: document.getElementById('k-poznamka').value
         })
-      }).then(r => r.json()).then(res => { 
-        if (res.status === 'success') {
-          e.target.reset();
-          nactiData(); 
-        }
-      });
+      }).then(r => r.json()).then(res => { if (res.status === 'success') nactiData(); });
     }
 
     function smazatKontaktAdmin(id) {
@@ -236,7 +226,6 @@
       fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "createAuto", nazev: document.getElementById('auto-nazev').value, rz: document.getElementById('auto-rz').value, odo: document.getElementById('auto-odo').value }) })
       .then(r => r.json()).then(res => { 
         if (res.status === 'success') {
-          e.target.reset();
           zavritModalNoveAuto();
           nactiData(); 
         }
@@ -248,7 +237,6 @@
       fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "createRidic", jmeno: document.getElementById('ridic-jmeno').value, telefon: document.getElementById('ridic-tel').value, pin: document.getElementById('ridic-pin').value }) })
       .then(r => r.json()).then(res => { 
         if (res.status === 'success') {
-          e.target.reset();
           zavritModalNovyRidic();
           nactiData(); 
         }
