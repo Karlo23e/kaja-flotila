@@ -1243,6 +1243,10 @@
       const autoId = document.getElementById('form-auto-id').value;
       const formatD = (d) => { if(!d)return""; const p=d.split('-'); return p[2]+"."+p[1]+"."+p[0]; };
 
+      const btn = document.getElementById('btn-save-terminy');
+      btn.disabled = true;
+      btn.innerText = "Ukládám...";
+
       fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
@@ -1256,11 +1260,22 @@
           havCena: parseFloat(document.getElementById('input-hav-cena').value) || 0,
           havMesice: parseInt(document.getElementById('input-hav-mesice').value) || 12
         })
-      }).then(r => r.json()).then(res => {
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.innerText = "Uložit termíny";
         if (res.status === 'success') {
           toggleFormularTerminy();
           nactiData(() => otevritDetail(autoId));
+        } else {
+          alert("Chyba při ukládání termínů: " + (res.message || "Neznámá chyba"));
         }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "Uložit termíny";
+        alert("Síťová chyba při ukládání termínů: " + err.toString());
       });
     }
 
