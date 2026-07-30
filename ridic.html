@@ -6,6 +6,7 @@
   <title>KaJa - Řidičská zóna</title>
 
   <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="./manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -146,7 +147,6 @@
         const sel = document.getElementById('login-select-ridic');
         (data.ridici || []).forEach(r => { sel.innerHTML += `<option value="${r.id}">${r.jmeno}</option>`; });
         
-        // Kontrola trvalého přihlášení
         const savedRidicId = localStorage.getItem('kaja_ridic_id');
         if (savedRidicId) {
           const ridic = (data.ridici || []).find(r => r.id == savedRidicId);
@@ -240,7 +240,7 @@
       const d = currentAuto.detailZbyva || {};
       document.getElementById('driver-intervals').innerHTML = `
         <div class="bg-slate-900 p-2 rounded">Olej: <strong>${d.olej ?? 'Neuvedeno'} km</strong></div>
-        <div class="bg-slate-900 p-2 rounded">STK do: <strong>${currentAuto.stk || 'Neuvedeno'}</strong></div>
+        <div class="bg-slate-900 p-2 rounded">STK do: <strong>${currentApp?.stk || currentAuto.stk || 'Neuvedeno'}</strong></div>
       `;
     }
 
