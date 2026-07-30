@@ -204,7 +204,7 @@
         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
             <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="file-text" class="w-4 h-4"></i> Dokumenty Vozidla (ORV & Zelená karta)
+              <i data-lucide="file-text" class="w-4 h-4"></i> DOKUMENTY VOZIDLA (ORV & ZELENÁ KARTA)
             </h3>
             <button onclick="toggleFormularDokumenty()" class="text-xs text-amber-400 hover:underline flex items-center gap-1">
               <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Nahrát soubory
@@ -254,7 +254,7 @@
         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
             <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="calendar" class="w-4 h-4"></i> Dokumenty a Kontroly
+              <i data-lucide="calendar" class="w-4 h-4"></i> DOKUMENTY A KONTROLY
             </h3>
             <button onclick="toggleFormularTerminy()" class="text-xs text-amber-400 hover:underline flex items-center gap-1">
               <i data-lucide="edit-2" class="w-3.5 h-3.5"></i> Upravit termíny
@@ -301,7 +301,7 @@
 
         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
           <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-700/60 pb-2">
-            <i data-lucide="gauge" class="w-4 h-4"></i> Zbývající km do servisu
+            <i data-lucide="gauge" class="w-4 h-4"></i> ZBÝVAJÍCÍ KM DO SERVISU
           </h3>
           <div class="grid grid-cols-2 gap-2 text-xs">
             <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
@@ -610,9 +610,22 @@
       document.getElementById('modal-spz').innerText = auto.rz;
       document.getElementById('form-auto-id').value = auto.id;
 
-      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<a href="${auto.malyTpPredniUrl}" target="_blank" class="underline text-amber-400">TP Přední</a>` : "Nenahráno";
-      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<a href="${auto.malyTpZadniUrl}" target="_blank" class="underline text-amber-400">TP Zadní</a>` : "Nenahráno";
-      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="underline text-amber-400">POV karta</a>` : "Nenahráno";
+      // ZOBRAZENÍ STK, DÁLNICE, HAV
+      document.getElementById('val-stk').innerText = auto.stk || 'Neuvedeno';
+      document.getElementById('val-dalnicni').innerText = auto.dalnicni || 'Neuvedeno';
+      document.getElementById('val-hav').innerText = auto.hav || 'Neuvedeno';
+
+      // ZOBRAZENÍ KM DO SERVISU
+      const d = auto.detailZbyva || {};
+      formatKmBox('val-km-olej', d.olej);
+      formatKmBox('val-km-kabinovy', d.kabinovy);
+      formatKmBox('val-km-vzduchovy', d.vzduchovy);
+      formatKmBox('val-km-palivovy', d.palivovy);
+
+      // ZOBRAZENÍ SOUBORŮ
+      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<a href="${auto.malyTpPredniUrl}" target="_blank" class="underline text-amber-400 font-bold">Zobrazit</a>` : "Nenahráno";
+      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<a href="${auto.malyTpZadniUrl}" target="_blank" class="underline text-amber-400 font-bold">Zobrazit</a>` : "Nenahráno";
+      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="underline text-amber-400 font-bold">Zobrazit</a>` : "Nenahráno";
 
       const sel = document.getElementById('plan-partner-select');
       sel.innerHTML = '<option value="">-- Bez konkrétního servisu --</option>';
@@ -626,7 +639,49 @@
       nacistHistoriiServisu(auto.id);
     }
 
+    function formatKmBox(elemId, val) {
+      const el = document.getElementById(elemId);
+      if (val === null || val === undefined) {
+        el.innerText = 'Nenastaveno'; el.className = 'font-mono font-bold text-slate-500';
+      } else {
+        el.innerText = Number(val).toLocaleString('cs-CZ') + ' km';
+        if (val <= 1000) el.className = 'font-mono font-bold text-red-400';
+        else if (val <= 3500) el.className = 'font-mono font-bold text-amber-400';
+        else el.className = 'font-mono font-bold text-emerald-400';
+      }
+    }
+
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
+    function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
+
+    function ulozitTerminy(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-save-terminy');
+      btn.disabled = true; btn.innerText = "Ukládám...";
+      const autoId = document.getElementById('form-auto-id').value;
+      const stkVal = document.getElementById('input-stk').value;
+      const dalnicniVal = document.getElementById('input-dalnicni').value;
+      const havVal = document.getElementById('input-hav').value;
+
+      const formatInputDate = (dStr) => {
+        if (!dStr) return "";
+        const parts = dStr.split('-');
+        return parts[2] + "." + parts[1] + "." + parts[0];
+      };
+
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "updateTerminy", autoId: autoId, stk: formatInputDate(stkVal), dalnicni: formatInputDate(dalnicniVal), hav: formatInputDate(havVal) })
+      }).then(r => r.json()).then(res => {
+        btn.disabled = false; btn.innerText = "Uložit termíny";
+        if (res.status === 'success') {
+          toggleFormularTerminy(); nactiData();
+          if (stkVal) document.getElementById('val-stk').innerText = formatInputDate(stkVal);
+          if (dalnicniVal) document.getElementById('val-dalnicni').innerText = formatInputDate(dalnicniVal);
+          if (havVal) document.getElementById('val-hav').innerText = formatInputDate(havVal);
+        } else { alert('Chyba při ukládání termínů.'); }
+      });
+    }
 
     async function ulozitDokumenty(e) {
       e.preventDefault();
@@ -723,6 +778,62 @@
               </div>
             `;
           });
+        });
+    }
+
+    function nacistHistoriiServisu(autoId) {
+      const histDiv = document.getElementById('servis-historie');
+      const loader = document.getElementById('servis-loader');
+      histDiv.innerHTML = ''; loader.classList.remove('hidden');
+
+      fetch(API_URL + "?action=getServisy&autoId=" + autoId)
+        .then(r => r.json())
+        .then(data => {
+          aktualniServisy = data; loader.classList.add('hidden');
+          if (data.length === 0) {
+            histDiv.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-2">Zatím žádné servisní záznamy.</p>';
+            return;
+          }
+          data.forEach(s => {
+            const maPodil = s.podilRidic > 0;
+            const jeZaplaceno = s.zaplaceno === "ANO";
+            const chybiZaplatit = maPodil && !jeZaplaceno;
+            const borderKarta = chybiZaplatit ? 'border-red-500/80 bg-red-950/20' : 'border-slate-700/60 bg-slate-800/40';
+
+            const zaplacenoBadge = maPodil ? `
+              <div class="mt-2 pt-2 border-t border-slate-700/50 flex justify-between items-center">
+                <span class="text-[11px] ${jeZaplaceno ? 'text-emerald-400 font-semibold flex items-center gap-1' : 'text-red-400 font-bold flex items-center gap-1 animate-pulse'}">
+                  ${jeZaplaceno ? '<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Zaplaceno (60% Řidič)' : '<i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i> NEZAPLACENO (' + Number(s.podilRidic).toLocaleString('cs-CZ') + ' Kč)'}
+                </span>
+                <button onclick="prepnutZaplaceno('${s.id}')" class="text-[11px] px-2 py-1 rounded border ${jeZaplaceno ? 'bg-slate-800 border-slate-600 text-slate-300' : 'bg-red-500 hover:bg-red-600 border-red-400 text-white font-bold'}">
+                  ${jeZaplaceno ? 'Označit jako nezaplacené' : 'Označit ZAPLACENO'}
+                </button>
+              </div>
+            ` : '';
+
+            histDiv.innerHTML += `
+              <div class="${borderKarta} border p-3.5 rounded-xl text-xs space-y-1.5 relative">
+                ${chybiZaplatit ? '<div class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>' : ''}
+                <div class="flex justify-between items-start pr-4">
+                  <div>
+                    <span class="font-bold text-slate-200 text-sm">${s.ukon}</span>
+                    <span class="text-[10px] text-slate-400 block">${s.datum}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-amber-400 font-mono font-bold text-sm block">${Number(s.cena).toLocaleString('cs-CZ')} Kč</span>
+                    <span class="font-mono text-[11px] text-slate-400">${Number(s.odo).toLocaleString('cs-CZ')} km</span>
+                  </div>
+                </div>
+                ${s.poznamka ? `<div class="text-slate-300 italic text-[11px] bg-slate-900/50 p-1.5 rounded">${s.poznamka}</div>` : ''}
+                ${zaplacenoBadge}
+                <div class="pt-2 flex justify-end gap-3 border-t border-slate-800/60 mt-2">
+                  <button onclick="nacetDoEditace('${s.id}')" class="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Upravit</button>
+                  <button onclick="smazatServis('${s.id}')" class="text-[11px] text-red-400 hover:text-red-300 flex items-center gap-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Smazat</button>
+                </div>
+              </div>
+            `;
+          });
+          lucide.createIcons();
         });
     }
 
