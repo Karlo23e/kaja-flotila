@@ -588,11 +588,15 @@
       </div>
 
     </div>
-  </div>
+  </main>
 
   <!-- JAVASCRIPT LOGIKA -->
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxt9pA_48IeWWP3shYOP_fi06qH24pMkTtjnWlEC9put_zQeHmKy_PpFpUuL2sFlrh58A/exec";
+    // Bezpečně složená adresa s novým ID z implementace
+    const API_BASE = "https://script.google.com/macros/s/";
+    const API_ID = "AKfycbzxo1uJ_ge4tkGLsdco088jJNdSJGLHk_ah55XYGtLBXV14CePgj2Quo9haLDX2no3g";
+    const API_URL = API_BASE + API_ID + "/exec";
+
     let seznamAut = [];
     let seznamRidicu = [];
     let seznamPartneru = [];
