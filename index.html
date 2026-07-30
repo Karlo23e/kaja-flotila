@@ -20,6 +20,9 @@
 </head>
 <body class="bg-slate-900 text-white min-h-screen p-4 sm:p-6 font-sans pb-12">
 
+  <!-- Skrytý iframe pro příjem odpovědi z nativního formuláře -->
+  <iframe name="upload-target-frame" id="upload-target-frame" style="display:none;" onload="onUploadComplete()"></iframe>
+
   <!-- Hlavička -->
   <header class="max-w-4xl mx-auto mb-6 flex justify-between items-center border-b border-slate-700 pb-4">
     <div>
@@ -226,7 +229,11 @@
             </div>
           </div>
 
-          <form id="form-dokumenty" onsubmit="ulozitDokumenty(event)" class="bg-slate-900 p-3.5 rounded-lg border border-amber-500/40 space-y-3 hidden mt-3">
+          <!-- Nativní HTML formulář přímo odesílaný na Google Apps Script po vzoru Google Forms -->
+          <form id="form-dokumenty" action="" method="POST" enctype="multipart/form-data" target="upload-target-frame" onsubmit="pripravitOdeslaniDokumentu()" class="bg-slate-900 p-3.5 rounded-lg border border-amber-500/40 space-y-3 hidden mt-3">
+            <input type="hidden" name="action" value="updateDokumentyAuto">
+            <input type="hidden" name="autoId" id="doc-auto-id">
+
             <div class="space-y-3 text-xs">
               <div>
                 <label class="block text-slate-400 mb-1">Malý TP - Přední strana (Fotka)</label>
@@ -455,9 +462,11 @@
     let seznamPartneru = [];
     let aktualniServisy = [];
     let aktivniHlavniTab = 'auta';
+    let isUploading = false;
 
     window.onload = function() {
       lucide.createIcons();
+      document.getElementById('form-dokumenty').action = API_URL;
       nactiData();
     };
 
@@ -500,7 +509,6 @@
       lucide.createIcons();
     }
 
-    // NOVÉ ZOBRAZENÍ KARET AUT S PREHLEDEM INTERVALŮ A TERMÍNŮ
     function vyrenderovatAuta(auta) {
       const grid = document.getElementById('grid-auta');
       grid.innerHTML = '';
@@ -528,7 +536,6 @@
               </div>
             </div>
 
-            <!-- Prehled termínů STK, Dálnice a HAV přímo na kartě -->
             <div class="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-700/60 text-[11px] text-center">
               <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800">
                 <span class="text-slate-500 text-[9px] block">STK</span>
@@ -640,6 +647,7 @@
       document.getElementById('modal-nazev').innerText = auto.nazev;
       document.getElementById('modal-spz').innerText = auto.rz;
       document.getElementById('form-auto-id').value = auto.id;
+      document.getElementById('doc-auto-id').value = auto.id;
 
       // ZOBRAZENÍ STK, DÁLNICE, HAV
       document.getElementById('val-stk').innerText = auto.stk || 'Neuvedeno';
@@ -685,6 +693,25 @@
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
     function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
 
+    function pripravitOdeslaniDokumentu() {
+      isUploading = true;
+      const btn = document.getElementById('btn-save-dok');
+      btn.disabled = true;
+      btn.innerText = "Nahrávám na Google Disk...";
+    }
+
+    function onUploadComplete() {
+      if (!isUploading) return;
+      isUploading = false;
+      const btn = document.getElementById('btn-save-dok');
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát a uložit dokumenty';
+      
+      toggleFormularDokumenty();
+      const autoId = document.getElementById('form-auto-id').value;
+      nactiData(() => otevritDetail(autoId));
+    }
+
     function ulozitTerminy(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save-terminy');
@@ -709,40 +736,6 @@
           toggleFormularTerminy();
           nactiData(() => otevritDetail(autoId));
         } else { alert('Chyba při ukládání termínů.'); }
-      });
-    }
-
-    function ulozitDokumenty(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btn-save-dok');
-      btn.disabled = true;
-      btn.innerText = "Nahrávám soubory...";
-
-      const autoId = document.getElementById('form-auto-id').value;
-      const formElement = document.getElementById('form-dokumenty');
-      const formData = new FormData(formElement);
-      formData.append("action", "updateDokumentyAuto");
-      formData.append("autoId", autoId);
-
-      fetch(API_URL, {
-        method: 'POST',
-        body: formData
-      })
-      .then(r => r.json())
-      .then(res => {
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát a uložit dokumenty';
-        if (res.status === 'success') {
-          toggleFormularDokumenty();
-          nactiData(() => otevritDetail(autoId));
-        } else {
-          alert("Chyba při nahrávání.");
-        }
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát a uložit dokumenty';
-        alert("Chyba při odesílání.");
       });
     }
 
