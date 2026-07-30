@@ -352,7 +352,7 @@
             </div>
           </div>
 
-          <form id="form-dokumenty" onsubmit="ulozitDokumentyBase64(event)" class="bg-slate-900 p-3.5 rounded-lg border border-amber-500/40 space-y-3 hidden mt-3">
+          <form id="form-dokumenty" onsubmit="ulozitDokumentyCloudinary(event)" class="bg-slate-900 p-3.5 rounded-lg border border-amber-500/40 space-y-3 hidden mt-3">
             <input type="hidden" id="doc-auto-id">
             <div class="space-y-3 text-xs">
               <div>
@@ -371,7 +371,7 @@
             <div class="flex justify-end gap-2 pt-1">
               <button type="button" onclick="toggleFormularDokumenty()" class="text-xs px-3 py-1.5 rounded bg-slate-800 text-slate-300">Zrušit</button>
               <button type="submit" id="btn-save-dok" class="text-xs px-3 py-1.5 rounded bg-amber-500 text-slate-950 font-bold flex items-center gap-1">
-                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát a uložit dokumenty
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Nahrát přes Cloudinary
               </button>
             </div>
           </form>
@@ -477,12 +477,12 @@
             </select>
           </div>
 
+          <!-- BOX PRO INTERVALY: OLEJ + FILTRY -->
           <div id="box-intervaly" class="bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-3">
             <h4 class="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
               <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i> Upozornění příští výměny
             </h4>
             
-            <!-- Motorový olej -->
             <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
               <div class="flex items-center justify-between">
                 <span class="font-medium text-slate-200">Motorový olej</span>
@@ -493,7 +493,6 @@
               </div>
             </div>
 
-            <!-- Kabinový filtr -->
             <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
               <div class="flex items-center justify-between">
                 <span class="font-medium text-slate-200">Kabinový filtr</span>
@@ -504,7 +503,6 @@
               </div>
             </div>
 
-            <!-- Vzduchový filtr -->
             <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
               <div class="flex items-center justify-between">
                 <span class="font-medium text-slate-200">Vzduchový filtr</span>
@@ -515,7 +513,6 @@
               </div>
             </div>
 
-            <!-- Palivový filtr -->
             <div class="space-y-1.5">
               <div class="flex items-center justify-between">
                 <span class="font-medium text-slate-200">Palivový filtr</span>
@@ -525,7 +522,6 @@
                 <input type="number" id="inter-palivovy" value="36000" class="w-24 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white font-mono"> km
               </div>
             </div>
-
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -539,38 +535,6 @@
             </div>
           </div>
 
-          <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
-            <label class="block text-slate-300 font-medium mb-1">Účtování nákladů:</label>
-            <select id="form-ucetovani-typ" onchange="spocitatPodily()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white text-xs">
-              <option value="60_40">60 % Řidič / 40 % Firma (Standard)</option>
-              <option value="100_firma">100 % Firma (Jde plně do mých nákladů)</option>
-              <option value="100_ridic">100 % Řidič (Jde plně za řidičem)</option>
-            </select>
-            <div id="split-preview" class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800 hidden">
-              <div class="text-amber-400">Podíl řidiče: <span id="val-ridic" class="font-mono font-bold">0</span> Kč</div>
-              <div class="text-emerald-400">Firemní podíl: <span id="val-firma" class="font-mono font-bold">0</span> Kč</div>
-            </div>
-          </div>
-
-          <div id="box-zaplaceno" class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 hidden">
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-slate-200">Podíl řidiče je již zaplacen</span>
-              <input type="checkbox" id="form-zaplaceno">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1">Poznámka / Detail úkonu</label>
-            <input type="text" id="form-poznamka" placeholder="Poznámka..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-amber-400 focus:outline-none">
-          </div>
-
-          <button type="submit" id="btn-ulozit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-lg flex items-center justify-center gap-2">
-            <i data-lucide="save" class="w-4 h-4"></i> Uložit servis do databáze
-          </button>
-        </form>
-      </div>
-
-          <!-- VOLBA ROZDĚLENÍ NÁKLADŮ (3 MOŽNOSTI) -->
           <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
             <label class="block text-slate-300 font-medium mb-1">Účtování nákladů:</label>
             <select id="form-ucetovani-typ" onchange="spocitatPodily()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white text-xs">
@@ -657,12 +621,30 @@
     </div>
   </main>
 
+  <!-- MODÁLNÍ OKNO PRO NÁHLED DOKUMENTU UVNITŘ APLIKACE -->
+  <div id="modal-preview" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-2xl p-4 shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3 shrink-0">
+        <h3 id="preview-title" class="text-md font-bold text-amber-400">Náhled dokumentu</h3>
+        <button onclick="zavritPreview()" class="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <div id="preview-content" class="flex-1 overflow-auto flex items-center justify-center p-2 bg-slate-950 rounded-xl">
+        <!-- Sem se dynamicky vloží obrázek nebo iframe pro PDF -->
+      </div>
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIKA -->
   <script>
-    // Bezpečně složená adresa s novým ID z implementace
     const API_BASE = "https://script.google.com/macros/s/";
     const API_ID = "AKfycbzxo1uJ_ge4tkGLsdco088jJNdSJGLHk_ah55XYGtLBXV14CePgj2Quo9haLDX2no3g";
     const API_URL = API_BASE + API_ID + "/exec";
+
+    // Cloudinary údaje
+    const CLOUD_NAME = "ou0xbczh";
+    const UPLOAD_PRESET = "KaJaApp";
 
     let seznamAut = [];
     let seznamRidicu = [];
@@ -909,7 +891,7 @@
               </span>
             </div>
             <p class="text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">${z.popis}</p>
-            ${z.fotkaUrl ? `<a href="${z.fotkaUrl}" target="_blank" class="inline-block text-amber-400 hover:underline">Otevřít fotku závady</a>` : ''}
+            ${z.fotkaUrl ? `<button onclick="zobrazitPreview('${z.fotkaUrl}', 'Fotka závady')" class="inline-block text-amber-400 hover:underline">Zobrazit fotku závady</button>` : ''}
             <div class="flex justify-end gap-2 pt-2 border-t border-slate-700/50">
               ${isNova ? `<button onclick="vyresitZavadu('${z.id}')" class="px-3 py-1.5 rounded bg-emerald-500 text-slate-950 font-bold">Označit jako vyřešeno</button>` : ''}
               <button onclick="prevedZavaduNaServis('${z.autoId}', '${z.popis.replace(/'/g, "")}')" class="px-3 py-1.5 rounded bg-amber-500 text-slate-950 font-bold flex items-center gap-1">
@@ -1051,9 +1033,9 @@
       formatKmBox('val-km-vzduchovy', d.vzduchovy);
       formatKmBox('val-km-palivovy', d.palivovy);
 
-      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<a href="${auto.malyTpPredniUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold">Otevřít</a>` : '<span class="text-slate-500">Nenahráno</span>';
-      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<a href="${auto.malyTpZadniUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold">Otevřít</a>` : '<span class="text-slate-500">Nenahráno</span>';
-      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<a href="${auto.povUrl}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold">Otevřít</a>` : '<span class="text-slate-500">Nenahráno</span>';
+      document.getElementById('view-maly-tp-predni').innerHTML = auto.malyTpPredniUrl ? `<button onclick="zobrazitPreview('${auto.malyTpPredniUrl}', 'Malý TP - Přední')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>` : '<span class="text-slate-500">Nenahráno</span>';
+      document.getElementById('view-maly-tp-zadni').innerHTML = auto.malyTpZadniUrl ? `<button onclick="zobrazitPreview('${auto.malyTpZadniUrl}', 'Malý TP - Zadní')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>` : '<span class="text-slate-500">Nenahráno</span>';
+      document.getElementById('view-pov').innerHTML = auto.povUrl ? `<button onclick="zobrazitPreview('${auto.povUrl}', 'Zelená karta (POV)')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-1 rounded font-bold hover:bg-emerald-500/30">Zobrazit</button>` : '<span class="text-slate-500">Nenahráno</span>';
 
       const selPart = document.getElementById('modal-plan-partner');
       if (selPart) {
@@ -1068,6 +1050,24 @@
       nacistPlanovaneServisyProAuto(auto.id);
       nacistHistoriiServisu(auto.id);
       vyrenderovatTCOProAuto(auto.id);
+    }
+
+    // FUNKCE PRO ZOBRAZENÍ DOKUMENTU PŘÍMO V APLIKACI
+    function zobrazitPreview(url, nazev) {
+      document.getElementById('preview-title').innerText = nazev;
+      const content = document.getElementById('preview-content');
+      
+      if (url.toLowerCase().endsWith('.pdf') || url.includes('/raw/upload/') || url.includes('.pdf?')) {
+        content.innerHTML = `<iframe src="${url}" class="w-full h-[70vh] rounded-lg border border-slate-700 bg-white"></iframe>`;
+      } else {
+        content.innerHTML = `<img src="${url}" alt="${nazev}" class="max-w-full max-h-[70vh] object-contain rounded-lg">`;
+      }
+      document.getElementById('modal-preview').classList.remove('hidden');
+    }
+
+    function zavritPreview() {
+      document.getElementById('modal-preview').classList.add('hidden');
+      document.getElementById('preview-content').innerHTML = '';
     }
 
     function togglePalivoAuta() {
@@ -1091,60 +1091,72 @@
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
     function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
 
-    function ulozitDokumentyBase64(e) {
+    // PŘÍMÉ NAHRÁVÁNÍ SOUBORŮ PŘES CLOUDINARY API
+    async function uploadNaCloudinary(file) {
+      if (!file) return null;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", UPLOAD_PRESET);
+
+      try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await response.json();
+        if (data.secure_url) {
+          return data.secure_url;
+        } else {
+          console.error("Cloudinary error:", data);
+          return null;
+        }
+      } catch (err) {
+        console.error("Chyba při uploadu na Cloudinary:", err);
+        return null;
+      }
+    }
+
+    async function ulozitDokumentyCloudinary(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save-dok');
       btn.disabled = true;
-      btn.innerText = "Nahrávám...";
+      btn.innerText = "Nahrávám na Cloudinary...";
 
       const autoId = document.getElementById('doc-auto-id').value;
       const filePredni = document.getElementById('input-file-maly-tp-predni').files[0];
       const fileZadni = document.getElementById('input-file-maly-tp-zadni').files[0];
       const filePov = document.getElementById('input-file-pov').files[0];
 
-      Promise.all([
-        filePredni ? readFileAsDataURL(filePredni) : Promise.resolve(null),
-        fileZadni ? readFileAsDataURL(fileZadni) : Promise.resolve(null),
-        filePov ? readFileAsDataURL(filePov) : Promise.resolve(null)
-      ]).then(([b64Predni, b64Zadni, b64Pov]) => {
-        return fetch(API_URL, {
+      try {
+        const url1 = await uploadNaCloudinary(filePredni);
+        const url2 = await uploadNaCloudinary(fileZadni);
+        const url3 = await uploadNaCloudinary(filePov);
+
+        const payload = { action: "updateDokumentyAuto", autoId: autoId };
+        if (url1) payload.malyTpPredniUrl = url1;
+        if (url2) payload.malyTpZadniUrl = url2;
+        if (url3) payload.povUrl = url3;
+
+        const response = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({
-            action: "updateDokumentyAuto",
-            autoId: autoId,
-            malyTpPredniBase64: b64Predni,
-            malyTpZadniBase64: b64Zadni,
-            povBase64: b64Pov
-          })
+          body: JSON.stringify(payload)
         });
-      })
-      .then(r => r.json())
-      .then(res => {
-        btn.disabled = false; 
-        btn.innerText = "Nahrát a uložit dokumenty";
+        const res = await response.json();
+
+        btn.disabled = false;
+        btn.innerText = "Nahrát přes Cloudinary";
+
         if (res.status === 'success') {
           toggleFormularDokumenty();
           nactiData(() => otevritDetail(autoId));
-        } else { 
-          console.error("Server vrátil chybu při uploadu:", res);
-          alert("Chyba při nahrávání: " + (res.message || 'Neznámá chyba')); 
+        } else {
+          alert("Chyba při ukládání do tabulky: " + (res.message || 'Neznámá chyba'));
         }
-      })
-      .catch(err => {
-        btn.disabled = false; 
-        btn.innerText = "Nahrát a uložit dokumenty";
-        console.error("Klientská chyba v Promise/Fetch:", err);
-        alert("Kritická chyba při odesílání: " + err.toString());
-      });
-    }
-
-    function readFileAsDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = err => reject(err);
-        reader.readAsDataURL(file);
-      });
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = "Nahrát přes Cloudinary";
+        alert("Chyba při komunikaci: " + err.toString());
+      }
     }
 
     function ulozitTerminy(e) {
@@ -1452,7 +1464,13 @@
           zaplacenoStav: zaplacenoStav,
           poznamka: document.getElementById('form-poznamka').value,
           notifyOlej: document.getElementById('notify-olej')?.checked || false,
-          intervalOlej: parseFloat(document.getElementById('inter-olej')?.value) || 12000
+          intervalOlej: parseFloat(document.getElementById('inter-olej')?.value) || 12000,
+          notifyKabinovy: document.getElementById('notify-kabinovy')?.checked || false,
+          intervalKabinovy: parseFloat(document.getElementById('inter-kabinovy')?.value) || 24000,
+          notifyVzduchovy: document.getElementById('notify-vzduchovy')?.checked || false,
+          intervalVzduchovy: parseFloat(document.getElementById('inter-vzduchovy')?.value) || 24000,
+          notifyPalivovy: document.getElementById('notify-palivovy')?.checked || false,
+          intervalPalivovy: parseFloat(document.getElementById('inter-palivovy')?.value) || 36000
         })
       }).then(r => r.json()).then(res => {
         if (res.status === 'success') {
