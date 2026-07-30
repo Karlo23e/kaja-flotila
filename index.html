@@ -377,7 +377,7 @@
           </form>
         </div>
 
-        <!-- Termíny a Fixní platby s počtem měsíců -->
+        <!-- Termíny a Fixní platby od data na počet měsíců -->
         <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
             <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
@@ -389,7 +389,7 @@
           </div>
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
             <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 block mb-0.5">STK do</span>
+              <span class="text-[10px] text-slate-400 block mb-0.5">STK platnost do</span>
               <span id="val-stk" class="font-mono font-bold text-white">...</span>
             </div>
             <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
@@ -404,22 +404,43 @@
 
           <form id="form-terminy" onsubmit="ulozitTerminy(event)" class="bg-slate-900 p-3.5 rounded-lg border border-amber-500/40 space-y-3 hidden mt-3 text-xs">
             <h4 class="font-bold text-slate-200">Platnosti a fixní platby pro TCO rozpočet:</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <div>
-                <label class="block text-slate-400 mb-1">STK do:</label>
-                <input type="date" id="input-stk" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <!-- STK -->
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800 space-y-2">
+                <label class="block text-amber-400 font-bold">STK platnost do:</label>
+                <input type="date" id="input-stk" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
               </div>
-              <div>
-                <label class="block text-slate-400 mb-1">Dálniční známka do:</label>
-                <input type="date" id="input-dalnicni" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono">
-                <input type="number" id="input-dalnicni-cena" placeholder="Cena Kč" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono mt-1">
-                <input type="number" id="input-dalnicni-mesice" value="12" placeholder="Počet měsíců (např. 12)" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono mt-1">
+              <!-- Dálniční známka -->
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800 space-y-2">
+                <label class="block text-amber-400 font-bold">Dálniční známka</label>
+                <div>
+                  <span class="text-[10px] text-slate-400 block mb-1">Datum od (zahájení):</span>
+                  <input type="date" id="input-dalnicni-od" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-400 block mb-1">Cena (Kč):</span>
+                  <input type="number" id="input-dalnicni-cena" placeholder="např. 2300" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-400 block mb-1">Počet měsíců platnosti:</span>
+                  <input type="number" id="input-dalnicni-mesice" value="12" placeholder="např. 12" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+                </div>
               </div>
-              <div>
-                <label class="block text-slate-400 mb-1">HAV pojištění do:</label>
-                <input type="date" id="input-hav" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono">
-                <input type="number" id="input-hav-cena" placeholder="Cena Kč" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono mt-1">
-                <input type="number" id="input-hav-mesice" value="12" placeholder="Počet měsíců (např. 12)" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono mt-1">
+              <!-- HAV Pojištění -->
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800 space-y-2">
+                <label class="block text-amber-400 font-bold">HAV Pojištění</label>
+                <div>
+                  <span class="text-[10px] text-slate-400 block mb-1">Datum od (zahájení):</span>
+                  <input type="date" id="input-hav-od" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-400 block mb-1">Cena (Kč):</span>
+                  <input type="number" id="input-hav-cena" placeholder="např. 12000" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-400 block mb-1">Počet měsíců platnosti:</span>
+                  <input type="number" id="input-hav-mesice" value="12" placeholder="např. 12" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white font-mono">
+                </div>
               </div>
             </div>
             <div class="flex justify-end gap-2 pt-1">
@@ -1228,12 +1249,12 @@
           action: "updateTerminy",
           autoId: autoId,
           stk: formatD(document.getElementById('input-stk').value),
-          dalnicni: formatD(document.getElementById('input-dalnicni').value),
-          hav: formatD(document.getElementById('input-hav').value),
-          havCena: parseFloat(document.getElementById('input-hav-cena').value) || 0,
-          havMesice: parseInt(document.getElementById('input-hav-mesice').value) || 12,
+          dalnicniOd: formatD(document.getElementById('input-dalnicni-od').value),
           dalnicniCena: parseFloat(document.getElementById('input-dalnicni-cena').value) || 0,
-          dalnicniMesice: parseInt(document.getElementById('input-dalnicni-mesice').value) || 12
+          dalnicniMesice: parseInt(document.getElementById('input-dalnicni-mesice').value) || 12,
+          havOd: formatD(document.getElementById('input-hav-od').value),
+          havCena: parseFloat(document.getElementById('input-hav-cena').value) || 0,
+          havMesice: parseInt(document.getElementById('input-hav-mesice').value) || 12
         })
       }).then(r => r.json()).then(res => {
         if (res.status === 'success') {
