@@ -477,6 +477,39 @@
             </select>
           </div>
 
+          <!-- BOX PRO BRZDY (PŘEDNÍ / ZADNÍ NÁPRAVA + KOTOUČE / DESKY) -->
+          <div id="box-brzdy" class="bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-3 hidden">
+            <h4 class="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+              <i data-lucide="disc" class="w-3.5 h-3.5"></i> Specifikace brzdového servisu
+            </h4>
+            
+            <!-- Přední náprava -->
+            <div class="space-y-1.5 border-b border-slate-800/60 pb-2">
+              <span class="font-bold text-slate-200 block">Přední náprava</span>
+              <div class="flex items-center gap-4 pl-2">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="brzdy-predni-kotouce"> Kotouče
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="brzdy-predni-desky"> Desky
+                </label>
+              </div>
+            </div>
+
+            <!-- Zadní náprava -->
+            <div class="space-y-1.5">
+              <span class="font-bold text-slate-200 block">Zadní náprava</span>
+              <div class="flex items-center gap-4 pl-2">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="brzdy-zadni-kotouce"> Kotouče
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="brzdy-zadni-desky"> Desky
+                </label>
+              </div>
+            </div>
+          </div>
+
           <!-- BOX PRO INTERVALY: OLEJ + FILTRY -->
           <div id="box-intervaly" class="bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-3">
             <h4 class="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
@@ -636,7 +669,7 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIKA -->
+  <!-- JAVASCRIPT LOGIKA S DEBUG VÝPISY -->
   <script>
     const API_BASE = "https://script.google.com/macros/s/";
     const API_ID = "AKfycbzxo1uJ_ge4tkGLsdco088jJNdSJGLHk_ah55XYGtLBXV14CePgj2Quo9haLDX2no3g";
@@ -681,34 +714,51 @@
 
     function nactiData(cb) {
       document.getElementById('loader').classList.remove('hidden');
+      console.log("DEBUG: Zahajuji načítání dat z:", API_URL);
 
       fetch(API_URL + "?action=getData")
-        .then(response => response.json())
-        .then(data => {
-          seznamAut = data.auta || [];
-          seznamRidicu = data.ridici || [];
-          seznamPartneru = data.partneri || [];
-          seznamZavad = data.zavady || [];
-          seznamPlanu = data.planovaneServisy || [];
-          
-          document.getElementById('count-auta').innerText = seznamAut.length;
-          document.getElementById('count-ridici').innerText = seznamRidicu.length;
-          document.getElementById('count-zavady').innerText = seznamZavad.filter(z => z.stav === 'NOVA').length;
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("HTTP chyba při načítání: " + response.status + " " + response.statusText);
+          }
+          return response.text();
+        })
+        .then(textData => {
+          console.log("DEBUG: Surová odpověď ze serveru:", textData.substring(0, 150) + "...");
+          try {
+            const data = JSON.parse(textData);
+            if (data.status === "error") {
+              throw new Error("Server hlásí chybu: " + data.message);
+            }
+            seznamAut = data.auta || [];
+            seznamRidicu = data.ridici || [];
+            seznamPartneru = data.partneri || [];
+            seznamZavad = data.zavady || [];
+            seznamPlanu = data.planovaneServisy || [];
+            
+            document.getElementById('count-auta').innerText = seznamAut.length;
+            document.getElementById('count-ridici').innerText = seznamRidicu.length;
+            document.getElementById('count-zavady').innerText = seznamZavad.filter(z => z.stav === 'NOVA').length;
 
-          vyrenderovatAuta(seznamAut);
-          vyrenderovatRidice(seznamRidicu);
-          vyrenderovatPartnery(seznamPartneru);
-          vyrenderovatGlobalniPlany(seznamPlanu);
-          vyrenderovatZavady(seznamZavad);
-          vyrenderovatGlobalniTCO();
-          
-          prepnoutSekci(aktivniSekce);
-
-          if (cb) cb();
+            vyrenderovatAuta(seznamAut);
+            vyrenderovatRidice(seznamRidicu);
+            vyrenderovatPartnery(seznamPartneru);
+            vyrenderovatGlobalniPlany(seznamPlanu);
+            vyrenderovatZavady(seznamZavad);
+            vyrenderovatGlobalniTCO();
+            
+            prepnoutSekci(aktivniSekce);
+            if (cb) cb();
+          } catch (jsonErr) {
+            console.error("DEBUG: Chyba parsování JSON odpovědi:", jsonErr, textData);
+            alert("Chyba: Server vrátil neplatná data (místo JSONu přišel HTML kód nebo chybová stránka). Zkontroluj konzoli (F12).");
+            document.getElementById('loader').innerHTML = '<p class="text-red-400">Chyba: Server vrátil neplatná data. Viz konzole.</p>';
+          }
         })
         .catch(err => {
-          console.error("Chyba při načítání dat:", err);
-          document.getElementById('loader').innerHTML = '<p class="text-red-400">Chyba při načítání dat z databáze.</p>';
+          console.error("DEBUG: Síťová nebo serverová chyba při nenačítání dat:", err);
+          alert("Chyba připojení k databázi: " + err.message);
+          document.getElementById('loader').innerHTML = '<p class="text-red-400">Chyba při načítání dat z databáze: ' + err.message + '</p>';
         });
     }
 
@@ -1091,9 +1141,11 @@
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
     function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
 
-    // PŘÍMÉ NAHRÁVÁNÍ SOUBORŮ PŘES CLOUDINARY API
+    // PŘÍMÉ NAHRÁVÁNÍ SOUBORŮ PŘES CLOUDINARY API S DEBUG VÝPISY
     async function uploadNaCloudinary(file) {
       if (!file) return null;
+      console.log("DEBUG CLOUDINARY: Zahajuji upload souboru:", file.name, "Velikost:", file.size);
+      
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
@@ -1104,14 +1156,19 @@
           body: formData
         });
         const data = await response.json();
+        console.log("DEBUG CLOUDINARY: Odpověď serveru:", data);
+
         if (data.secure_url) {
+          console.log("DEBUG CLOUDINARY: Úspěšně nahráno na URL:", data.secure_url);
           return data.secure_url;
         } else {
-          console.error("Cloudinary error:", data);
+          console.error("DEBUG CLOUDINARY: Server vrátil chybu:", data);
+          alert("Chyba Cloudinary: " + (data.error && data.error.message ? data.error.message : JSON.stringify(data)));
           return null;
         }
       } catch (err) {
-        console.error("Chyba při uploadu na Cloudinary:", err);
+        console.error("DEBUG CLOUDINARY: Síťová výjimka při uploadu:", err);
+        alert("Síťová chyba při nahrávání na Cloudinary: " + err.toString());
         return null;
       }
     }
@@ -1137,12 +1194,16 @@
         if (url2) payload.malyTpZadniUrl = url2;
         if (url3) payload.povUrl = url3;
 
+        console.log("DEBUG: Odesílám URL dokumentů do Apps Scriptu:", payload);
+
         const response = await fetch(API_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        const res = await response.json();
+        const resText = await response.text();
+        console.log("DEBUG: Odpověď Apps Scriptu na dokumenty:", resText);
 
+        const res = JSON.parse(resText);
         btn.disabled = false;
         btn.innerText = "Nahrát přes Cloudinary";
 
@@ -1155,6 +1216,7 @@
       } catch (err) {
         btn.disabled = false;
         btn.innerText = "Nahrát přes Cloudinary";
+        console.error("DEBUG: Chyba v ulozitDokumentyCloudinary:", err);
         alert("Chyba při komunikaci: " + err.toString());
       }
     }
@@ -1445,6 +1507,33 @@
       const autoId = document.getElementById('form-auto-id').value;
       const cena = parseFloat(document.getElementById('form-cena').value) || 0;
       const typ = document.getElementById('form-ucetovani-typ').value;
+      const vybranyUkon = document.getElementById('form-ukon').value;
+
+      // Sestavení detailního popisu pro brzdy
+      let finalniUkon = vybranyUkon;
+      if (vybranyUkon === "Brzdy") {
+        let casti = [];
+        const pKot = document.getElementById('brzdy-predni-kotouce').checked;
+        const pDesky = document.getElementById('brzdy-predni-desky').checked;
+        const zKot = document.getElementById('brzdy-zadni-kotouce').checked;
+        const zDesky = document.getElementById('brzdy-zadni-desky').checked;
+
+        if (pKot || pDesky) {
+          let det = [];
+          if (pKot) det.push("Kotouče");
+          if (pDesky) det.push("Desky");
+          casti.push("Přední (" + det.join(" + ") + ")");
+        }
+        if (zKot || zDesky) {
+          let det = [];
+          if (zKot) det.push("Kotouče");
+          if (zDesky) det.push("Desky");
+          casti.push("Zadní (" + det.join(" + ") + ")");
+        }
+        if (casti.length > 0) {
+          finalniUkon = "Brzdy - " + casti.join(" | ");
+        }
+      }
 
       let podilRidic = 0;
       if (typ === '60_40') podilRidic = Math.round(cena * 0.6);
@@ -1452,31 +1541,44 @@
 
       let zaplacenoStav = (podilRidic > 0) ? (document.getElementById('form-zaplaceno').checked ? "ANO" : "NE") : "ANO";
 
+      const payload = {
+        action: "createServis",
+        autoId: autoId,
+        ukon: finalniUkon,
+        odo: document.getElementById('form-odo').value,
+        cena: cena,
+        podilRidic: podilRidic,
+        zaplacenoStav: zaplacenoStav,
+        poznamka: document.getElementById('form-poznamka').value,
+        notifyOlej: document.getElementById('notify-olej')?.checked || false,
+        intervalOlej: parseFloat(document.getElementById('inter-olej')?.value) || 12000,
+        notifyKabinovy: document.getElementById('notify-kabinovy')?.checked || false,
+        intervalKabinovy: parseFloat(document.getElementById('inter-kabinovy')?.value) || 24000,
+        notifyVzduchovy: document.getElementById('notify-vzduchovy')?.checked || false,
+        intervalVzduchovy: parseFloat(document.getElementById('inter-vzduchovy')?.value) || 24000,
+        notifyPalivovy: document.getElementById('notify-palivovy')?.checked || false,
+        intervalPalivovy: parseFloat(document.getElementById('inter-palivovy')?.value) || 36000
+      };
+
+      console.log("DEBUG: Odesílám nový servis:", payload);
+
       fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({
-          action: "createServis",
-          autoId: autoId,
-          ukon: document.getElementById('form-ukon').value,
-          odo: document.getElementById('form-odo').value,
-          cena: cena,
-          podilRidic: podilRidic,
-          zaplacenoStav: zaplacenoStav,
-          poznamka: document.getElementById('form-poznamka').value,
-          notifyOlej: document.getElementById('notify-olej')?.checked || false,
-          intervalOlej: parseFloat(document.getElementById('inter-olej')?.value) || 12000,
-          notifyKabinovy: document.getElementById('notify-kabinovy')?.checked || false,
-          intervalKabinovy: parseFloat(document.getElementById('inter-kabinovy')?.value) || 24000,
-          notifyVzduchovy: document.getElementById('notify-vzduchovy')?.checked || false,
-          intervalVzduchovy: parseFloat(document.getElementById('inter-vzduchovy')?.value) || 24000,
-          notifyPalivovy: document.getElementById('notify-palivovy')?.checked || false,
-          intervalPalivovy: parseFloat(document.getElementById('inter-palivovy')?.value) || 36000
-        })
-      }).then(r => r.json()).then(res => {
+        body: JSON.stringify(payload)
+      })
+      .then(r => r.json())
+      .then(res => {
+        console.log("DEBUG: Odpověď serveru na servis:", res);
         if (res.status === 'success') {
           document.getElementById('form-servis').reset();
           nactiData(() => { otevritDetail(autoId); prepnutTab('historie'); });
+        } else {
+          alert("Chyba při ukládání servisu: " + (res.message || "Neznámá chyba"));
         }
+      })
+      .catch(err => {
+        console.error("DEBUG: Chyba při odesílání servisu:", err);
+        alert("Síťová chyba při ukládání servisu: " + err.toString());
       });
     }
 
@@ -1579,9 +1681,17 @@
 
     function zmenaUkonu() {
       const ukon = document.getElementById('form-ukon').value;
-      const box = document.getElementById('box-intervaly');
-      if (ukon === "Olej + Filtry") box.classList.remove('hidden');
-      else box.classList.add('hidden');
+      const boxOlej = document.getElementById('box-intervaly');
+      const boxBrzdy = document.getElementById('box-brzdy');
+
+      boxOlej.classList.add('hidden');
+      boxBrzdy.classList.add('hidden');
+
+      if (ukon === "Olej + Filtry") {
+        boxOlej.classList.remove('hidden');
+      } else if (ukon === "Brzdy") {
+        boxBrzdy.classList.remove('hidden');
+      }
     }
 
     function toggleIntervalInput(typ) {
