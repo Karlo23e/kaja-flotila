@@ -605,7 +605,6 @@
       lucide.createIcons();
       nactiData();
       
-      // Podpora pro SWIPE gesto z levého okraje pro otevření menu
       let touchStartX = 0;
       window.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, false);
       window.addEventListener('touchend', e => {
@@ -849,7 +848,6 @@
     }
 
     function vyrenderovatGlobalniPlany(plany) {
-      // Naplnění selectu aut a partnerů v globálním plánování
       const selAuto = document.getElementById('global-plan-auto');
       if (selAuto) {
         selAuto.innerHTML = '<option value="">-- Vyberte vozidlo --</option>';
@@ -876,7 +874,7 @@
         const autoNazev = auto ? auto.nazev : 'Neznámé auto';
         let stavRidic = '<span class="text-amber-400 font-bold">Čeká na vyjádření řidiče</span>';
         if (p.volba === 'ZAJEDU_SAM') stavRidic = '<span class="text-emerald-400 font-bold">Řidič zajede sám</span>';
-        if (p.volban === 'PREDAM') stavRidic = '<span class="text-red-400 font-bold">Řidič předá auto</span>';
+        if (p.volba === 'PREDAM') stavRidic = '<span class="text-red-400 font-bold">Řidič předá auto</span>';
 
         box.innerHTML += `
           <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-xl text-xs space-y-1.5">
@@ -907,7 +905,6 @@
 
       let html = `<div class="space-y-3">`;
       seznamAut.forEach(auto => {
-        // Výpočet pro každé auto zvlášť
         let tco = spoctiTCOProAuto(auto.id);
         celkemFiremniNaklady += tco.celkovéFiremniNaklady;
         celkemKm += tco.najetoKm;
@@ -943,41 +940,14 @@
       const auto = seznamAut.find(a => a.id == autoId);
       if (!auto) return { najetoKm: 0, celkovéFiremniNaklady: 0, nakladNaKm: 0 };
 
-      // Nájezdy km (aktuální ODO - počáteční ODO z prvního záznamu nebo servisu)
-      const servisyAuta = aktualniServisyFiltrovane(autoId);
-      let minOdo = auto.odo; // výchozí
-      // Můžeme vzít rozdíl mezi aktuálním ODO a nejnižším ODO v historii
-      let maxOdo = auto.odo;
-      // Pro zjednodušení vezmeme celkový nájezd jako ODO - počáteční odhad nebo součet
-      let najetoKm = 10000; // orientační výchozí, pokud není dost dat
-      // Zkusíme spočítat z historie servisů
-      if (servisyAuta.length > 0) {
-        let odos = servisyAuta.map(s => s.odo).sort((a,b)=>a-b);
-        minOdo = odos[0];
-        najetoKm = Math.max(1000, maxOdo - minOdo);
-      } else {
-        najetoKm = 15000; // Výchozí roční nájezd
-      }
-
-      // Firemní náklady na servisy (kde podilRidic nebyl 100% řidič)
-      // Pokud nebylo rozdělení nebo HAV/Dálniční známka:
-      let firemniServisy = 0;
-      // Načteme servisy z globální proměnné nebo API
-      // Pro tuto chvíli spočítáme fixní platby HAV + dálniční známka
+      let najetoKm = 15000;
       let fixniPlatby = (auto.havCena || 0) + (auto.dalnicniCena || 0);
-
-      let celkovéFiremniNaklady = fixniPlatby; // plus firemní podíly servisů
+      let celkovéFiremniNaklady = fixniPlatby;
       let nakladNaKm = najetoKm > 0 ? (celkovéFiremniNaklady / najetoKm) : 0;
 
       return { najetoKm, celkovéFiremniNaklady, nakladNaKm };
     }
 
-    function aktualniServisyFiltrovane(autoId) {
-      // Vrací servisy pro dané auto
-      return [];
-    }
-
-    // DETAIL AUTA A ZÁLOŽKY
     function otevritDetail(autoId) {
       const auto = seznamAut.find(a => a.id == autoId);
       if (!auto) return;
@@ -1046,7 +1016,6 @@
     function toggleFormularDokumenty() { document.getElementById('form-dokumenty').classList.toggle('hidden'); }
     function toggleFormularTerminy() { document.getElementById('form-terminy').classList.toggle('hidden'); }
 
-    // Nahrávání dokumentů přes Base64 JSON
     function ulozitDokumentyBase64(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-save-dok');
@@ -1117,21 +1086,20 @@
       });
     }
 
-    // SPRAVA PLANOVANYCH SERVISU V DETAILU AUTA
     function ulozitPlanovanyServisDetail(e) {
       e.preventDefault();
       const autoId = document.getElementById('form-auto-id').value;
       const planId = document.getElementById('modal-plan-id').value;
       const ridic = seznamRidicu.find(r => r.prirazeneAutoId == autoId);
-
       const action = planId ? "updatePlanovanyServis" : "createPlanovanyServis";
+
       fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
           action: action, planId: planId, autoId: autoId, ridicId: ridic ? ridic.id : "",
           datumPlan: document.getElementById('modal-plan-datum').value,
           ukon: document.getElementById('modal-plan-ukon').value,
-          partnerId: document.getElementById('modal-modal-partner'] || document.getElementById('modal-plan-partner').value,
+          partnerId: document.getElementById('modal-plan-partner').value,
           poznamka: document.getElementById('modal-plan-poznamka').value
         })
       }).then(r => r.json()).then(res => {
@@ -1210,7 +1178,6 @@
       });
     }
 
-    // Globální plánování z menu
     function ulozitGlobalniPlan(e) {
       e.preventDefault();
       const planId = document.getElementById('global-plan-id').value;
@@ -1273,7 +1240,6 @@
       document.getElementById('global-plan-ukon').value = "Oprava: " + popisZavady;
     }
 
-    // HISTORIE A TCO PRO JEDNOTLIVÁ AUTA
     function nacistHistoriiServisu(autoId) {
       const histDiv = document.getElementById('servis-historie');
       const loader = document.getElementById('servis-loader');
@@ -1352,7 +1318,6 @@
       lucide.createIcons();
     }
 
-    // VÝPOČET PODÍLŮ U NOVÉHO SERVISU (3 možnosti)
     function spocitatPodily() {
       const cena = parseFloat(document.getElementById('form-cena').value) || 0;
       const typ = document.getElementById('form-ucetovani-typ').value;
@@ -1410,7 +1375,6 @@
       });
     }
 
-    // Pomocné funkce pro partnery, modaly a záložky
     function ulozitPartnera(e) {
       e.preventDefault();
       fetch(API_URL, {
